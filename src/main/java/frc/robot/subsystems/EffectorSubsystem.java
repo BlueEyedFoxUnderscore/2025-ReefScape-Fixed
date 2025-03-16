@@ -47,6 +47,8 @@ public class EffectorSubsystem extends SubsystemBase {
         sparkMaxIntakeConfig.closedLoop
             .pidf(0,0.0,0.0,0.0168079390796268, ClosedLoopSlot.kSlot0) // 0.0168 v/rpm, so at 10v = 584 max 
             .pidf(.3, 0, 0, 0, ClosedLoopSlot.kSlot1)
+            .pidf(.2, 0, 0, 0, ClosedLoopSlot.kSlot2)
+            .pidf(.1, 0, 0, 0, ClosedLoopSlot.kSlot3)
             .outputRange(-1, 1);
         sparkMaxIntakeConfig.encoder
             // positionConversionFactor sets the position that encoder reports when making one full revolution.
@@ -114,6 +116,15 @@ public class EffectorSubsystem extends SubsystemBase {
                 leftIntakeSparkMaxClosedLoopController.setReference(ips, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
                 System.out.println("Effector speed set to " + ips);
             }); 
+    }
+    
+    public Command makeRunSideways()
+    {
+        return this.runOnce(() -> { // onInit
+            rightIntakeSparkClosedLoopController.setReference(25, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+            leftIntakeSparkMaxClosedLoopController.setReference(15, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+            System.out.println("Effector ejecting sideways ");
+        });
     }
     
     public Command makeMoveTo(double position)

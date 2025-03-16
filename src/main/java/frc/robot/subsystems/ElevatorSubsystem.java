@@ -48,7 +48,7 @@ public class ElevatorSubsystem extends SubsystemBase{
     private static final CANdi lampryCANdi = new CANdi(53, "Default Name");
 
     private static final double minAllowedAngle = -20.0; 
-    private static final double maxAllowedAngle = 70.0;
+    private static final double maxAllowedAngle = 75.0;
     private static final double minAllowedPosition = 0.0;
     private static final double maxAllowedPosition = 46.5;
 

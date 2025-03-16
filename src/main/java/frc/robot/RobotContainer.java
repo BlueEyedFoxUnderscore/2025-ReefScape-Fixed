@@ -8,12 +8,15 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import javax.sound.sampled.SourceDataLine;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
@@ -26,9 +29,9 @@ import frc.robot.subsystems.KickerSubsystem;
 
 public class RobotContainer {
 
-    private enum PoseState {SAFE, INTAKE, L4};
+    private enum PoseState {SAFE, INTAKE, L1, L2, L3, L4, LIFT};
 
-    private static final PoseState previousPoseState = PoseState.SAFE;
+    private static PoseState previousPoseState = PoseState.SAFE;
 
     private EffectorSubsystem effectorSubsystem = new EffectorSubsystem();
     private KickerSubsystem kickerSubsystem = new KickerSubsystem();
@@ -36,11 +39,13 @@ public class RobotContainer {
     private final CommandXboxController controllerDriver   = new CommandXboxController(0);
     private final CommandXboxController controllerOperator = new CommandXboxController(1);
 
+    private final Command makeSetNewPoseState(PoseState newState) { return Commands.runOnce(() -> previousPoseState = newState); }
     private final Command makeEffectorFastForward()           { return effectorSubsystem.makeSetSpeed(60.5);} // Top speed = 60.5
     private final Command makeEffectorStop()                  { return effectorSubsystem.makeSetSpeed(0.0);} 
     private final Command makeEffectorCenterCoral()           { return effectorSubsystem.makeMoveTo(6.0);} 
     private final Command makeEffectorZeroEncoder()           { return effectorSubsystem.makeZeroEncoder();}
     private final Command makeEffectorRotateToSafe()          { return effectorSubsystem.makeRotateTo(+ 0.0);}
+    private final Command makeEffectorSubsystem()             { return effectorSubsystem.makeRunSideways(); }
 
 
 
@@ -55,12 +60,17 @@ public class RobotContainer {
     private final Command makeEffectorWaitUntilCoralPresent() { return effectorSubsystem.makeWaitUntilCoralPresent();} 
     private final Command makeEffectorWaitUntilCoralMissing() { return effectorSubsystem.makeWaitUntilCoralMissing();} 
 
-    private final Command makeEffectorDepositCoral()          { return  effectorSubsystem.makeZeroEncoder().andThen(effectorSubsystem.makeMoveTo(20.0));} 
-
-    private final Command makeEffectorRotateToL4()        { return effectorSubsystem.makeRotateTo(+30.0);} 
-    private final Command makeEffectorMoveToL4()              { return effectorSubsystem.makeMoveTo(3.5);} 
-    private final Command makeElevatorRotateToPreL4()              { return elevatorSubsystem.makeGoToAngleCmd(11);}
-    private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(16);}
+    private final Command makeEffectorDepositCoral()          { return  effectorSubsystem.makeZeroEncoder()
+        .andThen(effectorSubsystem.makeMoveTo(20.0));} 
+    private final Command makeEffectorSidewaysDepositCoral()          { return  effectorSubsystem.makeZeroEncoder()
+        .andThen(makeEffectorSubsystem()
+        .andThen(Commands.waitSeconds(2))
+        .andThen(makeEffectorStop()));}
+    
+    private final Command makeEffectorRotateToL4()        { return effectorSubsystem.makeRotateTo(+40.0);} 
+    private final Command makeEffectorMoveToL4()              { return effectorSubsystem.makeMoveTo(3.0);} 
+    private final Command makeElevatorRotateToPreL4()              { return elevatorSubsystem.makeGoToAngleCmd(12);}
+    private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(17);}
     private final Command makeElevatorGoToL4()                    { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
 
     private final Command makeEffectorRotateToL3()        { return effectorSubsystem.makeRotateTo(+8.0);} 
@@ -73,14 +83,25 @@ public class RobotContainer {
     private final Command makeElevatorRotateToL2()              { return elevatorSubsystem.makeGoToAngleCmd(37);}
     private final Command makeElevatorGoToL2()                    { return elevatorSubsystem.makeGoToPositionCmd(4.5);}
 
+    private final Command makeEffectorRotateToL1()        { return effectorSubsystem.makeRotateTo(-59);} 
+    private final Command makeElevatorRotateToPreL1()              { return elevatorSubsystem.makeGoToAngleCmd(42);}
+    private final Command makeElevatorRotateToL1()              { return elevatorSubsystem.makeGoToAngleCmd(47);}  // 40 was about 2 inches too high
+    private final Command makeElevatorGoToL1()                    { return elevatorSubsystem.makeGoToPositionCmd(1);}
+
+    
+    private final Command makeEffectorRotateToLift()        { return effectorSubsystem.makeRotateTo(90);} 
+    private final Command makeElevatorRotateToLift()              { return elevatorSubsystem.makeGoToAngleCmd(80);}
+    private final Command makeElevatorGoToLift()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
+
+    private final Command say(String msg) {return Commands.runOnce(() -> System.out.println(msg));}
+
     private final Command makeRobotSafe() {
         return makeElevatorRotateToPreL4()
                 .andThen(makeElevatorGoToSafe())
                 .andThen(makeElevatorRotateToSafe())
-                .andThen(makeEffectorRotateToSafe());
+                .andThen(makeEffectorRotateToSafe())
+                .andThen(makeSetNewPoseState(PoseState.SAFE));
     };
-
-    private final Command say(String msg) {return Commands.runOnce(() -> System.out.println(msg));}
 
     private final Command robotIntake                   =  makeRobotSafe()
                                                           .andThen(makeEffectorRotateToIntake())
@@ -92,32 +113,49 @@ public class RobotContainer {
                                                           .andThen(makeEffectorWaitUntilCoralMissing())
                                                           .andThen(makeEffectorZeroEncoder())
                                                           .andThen(makeEffectorCenterCoral())
+                                                          .andThen(makeSetNewPoseState(PoseState.INTAKE))
                                                           .finallyDo((interrupted)->{if (interrupted) makeEffectorStop().schedule();});
 
-    private final Command robotToL2 = makeRobotSafe()
-        .andThen(makeEffectorRotateToL2())
-        .andThen(makeElevatorRotateToPreL2())
-        .andThen(makeElevatorGoToL2())
-        .andThen(makeElevatorRotateToL2());
-                                                      
-
-    private final Command robotToL3 = makeRobotSafe()
-        .andThen(makeEffectorRotateToL3())
-        .andThen(makeElevatorRotateToPreL3())
-        .andThen(makeElevatorGoToL3())
-        .andThen(makeElevatorRotateToL3());
                                                     
     private final Command robotToL4 = makeRobotSafe()
         .andThen(makeEffectorRotateToL4())
         .andThen(makeEffectorMoveToL4())
         .andThen(makeElevatorRotateToPreL4())
         .andThen(makeElevatorGoToL4())
-        .andThen(makeElevatorRotateToL4());
+        .andThen(makeElevatorRotateToL4())
+        .andThen(makeSetNewPoseState(PoseState.L4));
+
+    private final Command robotToL3 = makeRobotSafe()
+        .andThen(makeEffectorRotateToL3())
+        .andThen(makeElevatorRotateToPreL3())
+        .andThen(makeElevatorGoToL3())
+        .andThen(makeElevatorRotateToL3())
+        .andThen(makeSetNewPoseState(PoseState.L3));
+
+    private final Command robotToL2 = makeRobotSafe()
+        .andThen(makeEffectorRotateToL2())
+        .andThen(makeElevatorRotateToPreL2())
+        .andThen(makeElevatorGoToL2())
+        .andThen(makeElevatorRotateToL2())
+        .andThen(makeSetNewPoseState(PoseState.L2));
+                                                      
+        private final Command robotToL1 = makeRobotSafe()
+        .andThen(makeEffectorRotateToL1())
+        .andThen(makeElevatorRotateToPreL1())
+        .andThen(makeElevatorGoToL1())
+        .andThen(makeElevatorRotateToL1())
+        .andThen(makeSetNewPoseState(PoseState.L1));                                                      
+
+        private final Command robotToLift = makeRobotSafe()
+        .andThen(makeEffectorRotateToLift())
+        .andThen(makeElevatorGoToLift())
+        .andThen(makeElevatorRotateToLift())
+        .andThen(makeSetNewPoseState(PoseState.LIFT));                                                      
 
     private final Command robotDrive = makeRobotSafe();
-    private final Command robotDepositCoral = makeEffectorDepositCoral();
-
-
+    
+    private final Command robotDepositCoral = new ConditionalCommand(makeEffectorDepositCoral(), say("sideways").andThen(makeEffectorSidewaysDepositCoral()), ()->{return previousPoseState!=PoseState.L1;});
+    
     private final Command kickerGoToPosition = kickerSubsystem.makeGoToPositionCmd(() -> controllerDriver.getRightTriggerAxis());
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -153,8 +191,8 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-controllerDriver.getLeftY() * Math.abs(controllerDriver.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-controllerDriver.getLeftX() * Math.abs(controllerDriver.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                drive.withVelocityX(-controllerDriver.getLeftY() * Math.abs(controllerDriver.getLeftY()) * MaxSpeed * (controllerDriver.rightBumper().getAsBoolean()?0.2:1.0)) // Drive forward with negative Y (forward)
+                    .withVelocityY(-controllerDriver.getLeftX() * Math.abs(controllerDriver.getLeftX()) * MaxSpeed * (controllerDriver.rightBumper().getAsBoolean()?0.2:1.0)) // Drive left with negative X (left)
                     .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
@@ -189,6 +227,8 @@ public class RobotContainer {
         controllerOperator.x().onTrue(robotToL3);
         controllerOperator.b().onTrue(robotToL3);
         controllerOperator.a().onTrue(robotToL2);
+        controllerOperator.rightBumper().onTrue(robotToL1);
+        controllerOperator.back().onTrue(robotToLift);
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
