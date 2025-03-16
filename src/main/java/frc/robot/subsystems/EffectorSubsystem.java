@@ -46,7 +46,7 @@ public class EffectorSubsystem extends SubsystemBase {
             .voltageCompensation(10.0);
         sparkMaxIntakeConfig.closedLoop
             .pidf(0,0.0,0.0,0.0168079390796268, ClosedLoopSlot.kSlot0) // 0.0168 v/rpm, so at 10v = 584 max 
-            .pidf(.07, 0, 0, 0, ClosedLoopSlot.kSlot1)
+            .pidf(.3, 0, 0, 0, ClosedLoopSlot.kSlot1)
             .outputRange(-1, 1);
         sparkMaxIntakeConfig.encoder
             // positionConversionFactor sets the position that encoder reports when making one full revolution.
@@ -126,11 +126,11 @@ public class EffectorSubsystem extends SubsystemBase {
     }
 
     public Command makeWaitUntilCoralPresent() {
-        return new WaitUntilCommand(() -> coralEffectorSensor.getVoltage() > 2.1);
+        return new WaitUntilCommand(() -> coralEffectorSensor.getVoltage() > 2.2);
     }
 
     public Command makeWaitUntilCoralMissing() {
-        return new WaitUntilCommand(() -> coralEffectorSensor.getVoltage() < 2.1);
+        return new WaitUntilCommand(() -> coralEffectorSensor.getVoltage() < 2.2);
     }
 
     public Command makeZeroEncoder() {

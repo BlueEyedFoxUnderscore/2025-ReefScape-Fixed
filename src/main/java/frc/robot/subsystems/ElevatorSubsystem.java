@@ -111,8 +111,9 @@ public class ElevatorSubsystem extends SubsystemBase{
             .positionConversionFactor(1.7716535329818726)
             .velocityConversionFactor(0.029527559876441956);
         leftExtensionSparkMaxConfig.closedLoop
-            .pidf(.9, 0, 0, .0001, ClosedLoopSlot.kSlot0)
-            .outputRange(-.3, .4, ClosedLoopSlot.kSlot0);  // -0.2 and 0.4 are really fast
+        .pidf(.9, 0, 0, .00001, ClosedLoopSlot.kSlot0)
+        .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot1)
+        .outputRange(-.3, .4, ClosedLoopSlot.kSlot0);  // -0.2 and 0.4 are really fast
 
         leftExtensionSparkMax.configure(leftExtensionSparkMaxConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
@@ -166,7 +167,6 @@ public class ElevatorSubsystem extends SubsystemBase{
             this);
     }
 
-    
     public Command makeGoToPositionCmd(double position){
         if (position<minAllowedPosition || position > maxAllowedPosition) {
             System.out.println("ASSERTION FAILED: Requested command would set elevator position out of bounds to " + position);
@@ -185,4 +185,14 @@ public class ElevatorSubsystem extends SubsystemBase{
             },
             this);
     }
+
+    public Command releaseBrake(){
+        return this.runEnd(
+            () -> {
+                leftExtensionController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot1);
+                /* release brake */
+            },
+            () -> {/* reenable brake */});
+    }
+
 }
