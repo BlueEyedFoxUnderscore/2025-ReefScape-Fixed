@@ -37,28 +37,31 @@ public class RobotContainer {
     private final CommandXboxController controllerOperator = new CommandXboxController(1);
 
     private final Command makeEffectorFastForward()           { return effectorSubsystem.makeSetSpeed(60.5);} // Top speed = 60.5
-    private final Command makeEffectorSlowReverse()           { return effectorSubsystem.makeSetSpeed(-5.0);} 
+    private final Command makeEffectorSlowReverse()           { return effectorSubsystem.makeSetSpeed(-10.0);} 
     private final Command makeEffectorStop()                  { return effectorSubsystem.makeSetSpeed(0.0);} 
     private final Command makeEffectorWaitUntilCoralPresent() { return effectorSubsystem.makeWaitUntilCoralPresent();} 
     private final Command makeEffectorWaitUntilCoralMissing() { return effectorSubsystem.makeWaitUntilCoralMissing();} 
     private final Command makeEffectorCenterCoral()           { return effectorSubsystem.makeMoveTo(6.0);} 
-    private final Command makeEffectorDepositCoral()          { return effectorSubsystem.makeMoveTo(15.0);} 
-    private final Command makeEffectorZeroEncoder()           { return effectorSubsystem.makeZeroEncoder();} 
-    private final Command makeEffectorRotateToIntake()        { return effectorSubsystem.makeRotateTo(+50.0);} 
+    private final Command makeEffectorDepositCoral()          { return effectorSubsystem.makeMoveTo(17.0);} 
+    private final Command makeEffectorZeroEncoder()           { return effectorSubsystem.makeZeroEncoder();}
+    private final Command makeEffectorRotateToIntake()        { return effectorSubsystem.makeRotateTo(+50.0);}
     private final Command makeEffectorRotateToLevel4()        { return effectorSubsystem.makeRotateTo(+40.0);} 
-    private final Command makeEffectorRotateToLevel3()        { return effectorSubsystem.makeRotateTo(+ 0.0);} 
-    private final Command makeEffectorRotateToLevel2()        { return effectorSubsystem.makeRotateTo(-20.0);} 
-    private final Command makeEffectorRotateToLevel1()        { return effectorSubsystem.makeRotateTo(-90.0);} 
-    private final Command makeEffectorRotateToSafe()          { return effectorSubsystem.makeRotateTo(+ 0.0);} 
+    private final Command makeEffectorRotateToLevel3()        { return effectorSubsystem.makeRotateTo(+ 0.0);}
+    private final Command makeEffectorRotateToLevel2()        { return effectorSubsystem.makeRotateTo(-20.0);}
+    private final Command makeEffectorRotateToLevel1()        { return effectorSubsystem.makeRotateTo(-90.0);}
+    private final Command makeEffectorRotateToSafe()          { return effectorSubsystem.makeRotateTo(+ 0.0);}
 
 
 
-    private final Command makeElevatorRotateToIntake()            { return elevatorSubsystem.makeGoToAngleCmd(-20.0);}
+    private final Command makeElevatorRotateToIntake()            { return elevatorSubsystem.makeGoToAngleCmd(-15.0);}
     private final Command makeElevatorRotateToSafe()              { return elevatorSubsystem.makeGoToAngleCmd(0);}
     private final Command makeElevatorRotateToPreL4()              { return elevatorSubsystem.makeGoToAngleCmd(15);}
-    private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(20);}
 
     private final Command makeElevatorGoToSafe()                  { return elevatorSubsystem.makeGoToPositionCmd(0.0);}
+    private final Command makeElevatorGoToIntake()                  { return elevatorSubsystem.makeGoToPositionCmd(1.0);}
+
+    private final Command makeEffectorMoveToL4()              { return effectorSubsystem.makeMoveTo(3.0);} 
+    private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(16);}
     private final Command makeElevatorGoToL4()                    { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
 
     private final Command makeRobotSafe() {
@@ -70,15 +73,11 @@ public class RobotContainer {
 
     private final Command say(String msg) {return Commands.runOnce(() -> System.out.println(msg));}
 
-    private final Command robotIntake                   = say("makeSafe")
-                                                          .andThen(makeRobotSafe())
-                                                          .andThen(say("madeSafe"))
+    private final Command robotIntake                   = makeRobotSafe()
                                                           .andThen(makeEffectorRotateToIntake())
-                                                          .andThen(say("makeEffectorRotateToIntake"))
+                                                          .andThen(makeElevatorGoToIntake())
                                                           .andThen(makeElevatorRotateToIntake())
-                                                          .andThen(say("makeElevatorRotateToIntake"))
                                                           .andThen(makeEffectorFastForward()) // Go fast
-                                                          .andThen(say("makeEffectorFastForward"))
                                                           .andThen(makeEffectorWaitUntilCoralPresent())  // Wait until coral present
                                                           .andThen(makeEffectorSlowReverse()) // Go slow
                                                           .andThen(makeEffectorWaitUntilCoralMissing())
@@ -89,6 +88,7 @@ public class RobotContainer {
 
     private final Command robotToL4 = makeRobotSafe()
         .andThen(makeEffectorRotateToLevel4())
+        .andThen(makeEffectorMoveToL4())
         .andThen(makeElevatorRotateToPreL4())
         .andThen(makeElevatorGoToL4())
         .andThen(makeElevatorRotateToL4());
@@ -104,7 +104,7 @@ public class RobotContainer {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDeadband(MaxSpeed * 0.02).withRotationalDeadband(MaxAngularRate * 0.02) // Add a 2% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive `tors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -117,6 +117,7 @@ public class RobotContainer {
     public RobotContainer() {
         initializeSubsystems();
         configureBindings();
+        
     }
 
     private void initializeSubsystems() {
@@ -131,8 +132,8 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-controllerDriver.getLeftY() * MaxSpeed * 0.4) // Drive forward with negative Y (forward)
-                    .withVelocityY(-controllerDriver.getLeftX() * MaxSpeed * 0.4) // Drive left with negative X (left)
+                drive.withVelocityX(-controllerDriver.getLeftY() * MaxSpeed * 0.8) // Drive forward with negative Y (forward)
+                    .withVelocityY(-controllerDriver.getLeftX() * MaxSpeed * 0.8) // Drive left with negative X (left)
                     .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
