@@ -31,6 +31,8 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystem extends SubsystemBase{
@@ -45,7 +47,7 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     private static final CANdi lampryCANdi = new CANdi(53, "Default Name");
 
-    private static final double minAllowedAngle = -20.0;
+    private static final double minAllowedAngle = -20.0; 
     private static final double maxAllowedAngle = 70.0;
     private static final double minAllowedPosition = 0.0;
     private static final double maxAllowedPosition = 46.5;
@@ -133,7 +135,7 @@ public class ElevatorSubsystem extends SubsystemBase{
             public void initSendable(SendableBuilder builder) {
                 builder.addDoubleProperty("Lampry angle", () -> {return lampryCANdi.getPWM1Position().getValueAsDouble()*360;}, null);
                 builder.addDoubleProperty("Elevator angle", () -> {return leaderTilt.getPosition().getValueAsDouble()*360;}, null);
-                builder.addDoubleProperty("Elevator extension", leftExtensionSparkMax.getAbsoluteEncoder()::getPosition, null);
+                builder.addDoubleProperty("Elevator extension", leftExtensionSparkMax.getEncoder()::getPosition, null);
             }
         });
 
@@ -149,29 +151,38 @@ public class ElevatorSubsystem extends SubsystemBase{
                 }
             );
         }
-        return this.runOnce(
+        return new FunctionalCommand (
             () -> {
                 leaderTilt.setControl(motionMagicVoltage.withPosition((angle/360.0)-.25)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
                 System.out.println("Elevator angle set to " + angle);
-            }
-        );
+            },
+            () -> {}, //onExecute
+            (Boolean wasCanceled) -> {}, //onEnd
+            () -> {
+                Boolean arrived = (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25)))<(5.0/360.0);
+                //System.out.println("Elevator angle arrived? Delta " + (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25))) + " so " + arrived); 
+                return arrived; 
+            },
+            this);
     }
 
     
     public Command makeGoToPositionCmd(double position){
         if (position<minAllowedPosition || position > maxAllowedPosition) {
             System.out.println("ASSERTION FAILED: Requested command would set elevator position out of bounds to " + position);
-            return this.runOnce(
-                () -> {
-                    System.out.println("This command sets the elevator position out of bounds to " + position);
-                }
-            );
         }
-        return this.runOnce(
+        return new FunctionalCommand (
             () -> {
                 leftExtensionController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
                 System.out.println("Elevator position set to " + position);
-            }
-        );
+            }, // onInit
+            () -> {}, //onExecute
+            (Boolean wasCanceled) -> {}, //onEnd
+            () -> {
+                Boolean arrived = (Math.abs(((leftExtensionSparkMax.getEncoder().getPosition())-position))<.25);
+                //System.out.println("at position? " + Math.abs(((leftExtensionSparkMax.getEncoder().getPosition())-position)) + " so " + arrived); 
+                return arrived; 
+            },
+            this);
     }
 }

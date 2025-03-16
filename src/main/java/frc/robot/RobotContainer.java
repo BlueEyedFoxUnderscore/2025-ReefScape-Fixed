@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -23,40 +25,79 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.KickerSubsystem;
 
 public class RobotContainer {
+
+    private enum PoseState {SAFE, INTAKE, L4};
+
+    private static final PoseState previousPoseState = PoseState.SAFE;
+
     private EffectorSubsystem effectorSubsystem = new EffectorSubsystem();
     private KickerSubsystem kickerSubsystem = new KickerSubsystem();
     private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController controllerDriver   = new CommandXboxController(0);
+    private final CommandXboxController controllerOperator = new CommandXboxController(1);
 
-    private Command effectorFastForward           = effectorSubsystem.makeEffectorSetSpeedCmd(60.5); // Top speed = 60.5
-    private Command effectorSlowReverse           = effectorSubsystem.makeEffectorSetSpeedCmd(-5.0);
-    private Command effectorStop                  = effectorSubsystem.makeEffectorSetSpeedCmd(0.0);
-    private Command effectorwaitUntilCoralPresent = effectorSubsystem.makeEffectorWaitUntilCoralPresent();
-    private Command effectorWaitUntilCoralMissing = effectorSubsystem.makeEffectorWaitUntilCoralMissing();
-    private Command effectorCenterCoral           = effectorSubsystem.makeEffectorSetPositionCmd(6.0);
-    private Command effectorZeroEncoder           = effectorSubsystem.makeEffectorZeroEncoderCmd();
-    private Command effectorRotateToIntake        = effectorSubsystem.makeEffectorRoateToPosition(+20.0);
-    private Command effectorRotateToLevel4        = effectorSubsystem.makeEffectorRoateToPosition(+40.0);
-    private Command effectorRotateToLevel3        = effectorSubsystem.makeEffectorRoateToPosition(+0.0);
-    private Command effectorRotateToLevel2        = effectorSubsystem.makeEffectorRoateToPosition(-20.0);
-    private Command effectorRotateToLevel1        = effectorSubsystem.makeEffectorRoateToPosition(-90.0);
-    private Command elevatorGoToIntakeAngle       = elevatorSubsystem.makeGoToAngleCmd(-10.0);
-    private Command elevatorGoToZero              = elevatorSubsystem.makeGoToPositionCmd(0.0);
-    private Command elevatorGoToL4                = elevatorSubsystem.makeGoToPositionCmd(46.5);
+    private final Command makeEffectorFastForward()           { return effectorSubsystem.makeSetSpeed(60.5);} // Top speed = 60.5
+    private final Command makeEffectorSlowReverse()           { return effectorSubsystem.makeSetSpeed(-5.0);} 
+    private final Command makeEffectorStop()                  { return effectorSubsystem.makeSetSpeed(0.0);} 
+    private final Command makeEffectorWaitUntilCoralPresent() { return effectorSubsystem.makeWaitUntilCoralPresent();} 
+    private final Command makeEffectorWaitUntilCoralMissing() { return effectorSubsystem.makeWaitUntilCoralMissing();} 
+    private final Command makeEffectorCenterCoral()           { return effectorSubsystem.makeMoveTo(6.0);} 
+    private final Command makeEffectorDepositCoral()          { return effectorSubsystem.makeMoveTo(15.0);} 
+    private final Command makeEffectorZeroEncoder()           { return effectorSubsystem.makeZeroEncoder();} 
+    private final Command makeEffectorRotateToIntake()        { return effectorSubsystem.makeRotateTo(+50.0);} 
+    private final Command makeEffectorRotateToLevel4()        { return effectorSubsystem.makeRotateTo(+40.0);} 
+    private final Command makeEffectorRotateToLevel3()        { return effectorSubsystem.makeRotateTo(+ 0.0);} 
+    private final Command makeEffectorRotateToLevel2()        { return effectorSubsystem.makeRotateTo(-20.0);} 
+    private final Command makeEffectorRotateToLevel1()        { return effectorSubsystem.makeRotateTo(-90.0);} 
+    private final Command makeEffectorRotateToSafe()          { return effectorSubsystem.makeRotateTo(+ 0.0);} 
 
-    private Command intakeCoral           = elevatorGoToIntakeAngle
-                                                    .andThen(effectorRotateToIntake)
-                                                    .andThen(effectorFastForward)
-                                                    .andThen(effectorwaitUntilCoralPresent)
-                                                    .andThen(effectorSlowReverse)
-                                                    .andThen(effectorWaitUntilCoralMissing)
-                                                    .andThen(effectorZeroEncoder)
-                                                    .andThen(effectorCenterCoral)
-                                                    .finallyDo((interrupted)->{if (interrupted) effectorStop.schedule();});
 
-                                                        
 
-    private Command kickerGoToPosition = kickerSubsystem.makeGoToPositionCmd(() -> joystick.getRightTriggerAxis());
+    private final Command makeElevatorRotateToIntake()            { return elevatorSubsystem.makeGoToAngleCmd(-20.0);}
+    private final Command makeElevatorRotateToSafe()              { return elevatorSubsystem.makeGoToAngleCmd(0);}
+    private final Command makeElevatorRotateToPreL4()              { return elevatorSubsystem.makeGoToAngleCmd(15);}
+    private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(20);}
+
+    private final Command makeElevatorGoToSafe()                  { return elevatorSubsystem.makeGoToPositionCmd(0.0);}
+    private final Command makeElevatorGoToL4()                    { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
+
+    private final Command makeRobotSafe() {
+        return makeElevatorRotateToPreL4()
+                .andThen(makeElevatorGoToSafe())
+                .andThen(makeElevatorRotateToSafe())
+                .andThen(makeEffectorRotateToSafe());
+    };
+
+    private final Command say(String msg) {return Commands.runOnce(() -> System.out.println(msg));}
+
+    private final Command robotIntake                   = say("makeSafe")
+                                                          .andThen(makeRobotSafe())
+                                                          .andThen(say("madeSafe"))
+                                                          .andThen(makeEffectorRotateToIntake())
+                                                          .andThen(say("makeEffectorRotateToIntake"))
+                                                          .andThen(makeElevatorRotateToIntake())
+                                                          .andThen(say("makeElevatorRotateToIntake"))
+                                                          .andThen(makeEffectorFastForward()) // Go fast
+                                                          .andThen(say("makeEffectorFastForward"))
+                                                          .andThen(makeEffectorWaitUntilCoralPresent())  // Wait until coral present
+                                                          .andThen(makeEffectorSlowReverse()) // Go slow
+                                                          .andThen(makeEffectorWaitUntilCoralMissing())
+                                                          .andThen(makeEffectorZeroEncoder())
+                                                          .andThen(makeEffectorCenterCoral())
+                                                          .finallyDo((interrupted)->{if (interrupted) makeEffectorStop().schedule();});
+
+
+    private final Command robotToL4 = makeRobotSafe()
+        .andThen(makeEffectorRotateToLevel4())
+        .andThen(makeElevatorRotateToPreL4())
+        .andThen(makeElevatorGoToL4())
+        .andThen(makeElevatorRotateToL4());
+
+    private final Command robotDrive = makeRobotSafe();
+    private final Command robotDepositCoral = makeEffectorDepositCoral();
+
+
+    private final Command kickerGoToPosition = kickerSubsystem.makeGoToPositionCmd(() -> controllerDriver.getRightTriggerAxis());
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -90,37 +131,43 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed * 0.4) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed * 0.4) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-controllerDriver.getLeftY() * MaxSpeed * 0.4) // Drive forward with negative Y (forward)
+                    .withVelocityY(-controllerDriver.getLeftX() * MaxSpeed * 0.4) // Drive left with negative X (left)
+                    .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
         kickerSubsystem.setDefaultCommand(kickerGoToPosition);
         
-        //joystick.povUp().onTrue(effectorRotateToLevel4.andThen(elevatorGoToL4Angle));
-        //joystick.povRight().onTrue(elevatorGoToZero.andThen(effectorRotateToLevel3));
-        //joystick.povDown().onTrue(effectorRotateToLevel2);
-        //joystick.povLeft().onTrue(effectorRotateToLevel1);
-        joystick.povUp().onTrue(elevatorGoToL4);
-        joystick.povDown().onTrue(elevatorGoToZero);
-        joystick.x().onTrue(intakeCoral);
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        ////joystick.povUp().onTrue(effectorRotateToLevel4.andThen(elevatorGoToL4Angle));
+        ////joystick.povRight().onTrue(elevatorGoToZero.andThen(effectorRotateToLevel3));
+        ////joystick.povDown().onTrue(effectorRotateToLevel2);
+        ////joystick.povLeft().onTrue(effectorRotateToLevel1);
+        //controllerDriver.povUp()  .onTrue(elevatorGoToL4);
+        //controllerDriver.povDown().onTrue(elevatorGoToSafe);
+        controllerDriver.x()      .onTrue(robotDrive);
+        controllerDriver.a()      .onTrue(robotDepositCoral);
+        controllerDriver.b()      .whileTrue(drivetrain.applyRequest(() ->
+            point.withModuleDirection(new Rotation2d(-controllerDriver.getLeftY(), -controllerDriver.getLeftX()))
         ));
+
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        controllerDriver.back().and(controllerDriver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        controllerDriver.back().and(controllerDriver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        controllerDriver.start().and(controllerDriver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        controllerDriver.start().and(controllerDriver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        controllerDriver.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        controllerOperator.leftBumper().onTrue(robotIntake);
+        controllerOperator.y().onTrue(robotToL4);
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+
     }
 
     public Command getAutonomousCommand() {

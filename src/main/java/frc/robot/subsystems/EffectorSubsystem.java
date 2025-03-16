@@ -93,7 +93,7 @@ public class EffectorSubsystem extends SubsystemBase {
         });
     }
 
-    public Command makeEffectorRoateToPosition(double position)
+    public Command makeRotateTo(double position)
     {  
         if (position > (130) || position < (-130)) {
             System.out.println("ASSERTION FAILURE: position for elevator pivot requested outside of allowed range!");
@@ -107,7 +107,7 @@ public class EffectorSubsystem extends SubsystemBase {
         );
     }
 
-    public Command makeEffectorSetSpeedCmd(double ips)
+    public Command makeSetSpeed(double ips)
     {
         return this.runOnce(() -> {
                 rightIntakeSparkClosedLoopController.setReference(ips, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
@@ -116,7 +116,7 @@ public class EffectorSubsystem extends SubsystemBase {
             }); 
     }
     
-    public Command makeEffectorSetPositionCmd(double position)
+    public Command makeMoveTo(double position)
     {
         return this.runOnce(() -> { // onInit
             rightIntakeSparkClosedLoopController.setReference(position-positionWhenZeroed, ControlType.kPosition, ClosedLoopSlot.kSlot1);
@@ -125,15 +125,15 @@ public class EffectorSubsystem extends SubsystemBase {
         });
     }
 
-    public Command makeEffectorWaitUntilCoralPresent() {
+    public Command makeWaitUntilCoralPresent() {
         return new WaitUntilCommand(() -> coralEffectorSensor.getVoltage() > 2.1);
     }
 
-    public Command makeEffectorWaitUntilCoralMissing() {
+    public Command makeWaitUntilCoralMissing() {
         return new WaitUntilCommand(() -> coralEffectorSensor.getVoltage() < 2.1);
     }
 
-    public Command makeEffectorZeroEncoderCmd() {
+    public Command makeZeroEncoder() {
         return this.runOnce(() -> {
             rightIntakeEncoder.setPosition(0);
             leftIntakeEncoder.setPosition(0);
