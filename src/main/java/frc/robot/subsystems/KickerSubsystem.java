@@ -31,7 +31,6 @@ public class KickerSubsystem extends SubsystemBase {
 
     private final static double
         kickerPosRetracted = 92 /* degrees */,
-        kickerPosPrepped = 105 /* degrees */,
         kickerPosExtended = 200 /* degrees */;
     
     public void init() {

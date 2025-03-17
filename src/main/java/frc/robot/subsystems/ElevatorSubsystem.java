@@ -1,18 +1,14 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
-import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
@@ -24,7 +20,6 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -32,7 +27,6 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -44,7 +38,9 @@ public class ElevatorSubsystem extends SubsystemBase{
 
     private static final TalonFXConfiguration followerTiltConfig = new TalonFXConfiguration();
     private static final TalonFXConfiguration leaderTiltConfig = new TalonFXConfiguration();
-    private static final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0);
+    private static final MotionMagicVoltage requestMotionMagicVoltage = new MotionMagicVoltage(0);
+    private static final CoastOut requestCoast = new CoastOut();
+    private static final NeutralOut requestNeutral = new NeutralOut();
 
     private static final CANdi lampryCANdi = new CANdi(53, "Default Name");
 
@@ -53,7 +49,6 @@ public class ElevatorSubsystem extends SubsystemBase{
     private static final double minAllowedPosition = 0.0;
     private static final double maxAllowedPosition = 46.5;
 
-    private SparkMaxConfig sparkMaxConfig;
     private SparkMax leftExtensionSparkMax = new SparkMax(31, MotorType.kBrushless);
     private SparkMax rightExtensionSparkMax = new SparkMax(32, MotorType.kBrushless);
     private SparkClosedLoopController leftExtensionController = leftExtensionSparkMax.getClosedLoopController();
@@ -66,8 +61,8 @@ public class ElevatorSubsystem extends SubsystemBase{
         followerTiltConfig.CurrentLimits.SupplyCurrentLimit = 15;
         followerTiltConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         followerTiltConfig.CurrentLimits.SupplyCurrentLowerTime = 0; // Disabled since zero
-        followerTiltConfig.Voltage.PeakForwardVoltage=2.0; //9.0;
-        followerTiltConfig.Voltage.PeakReverseVoltage=-2.0; // -9.0;
+        followerTiltConfig.Voltage.PeakForwardVoltage=9.0; //9.0;
+        followerTiltConfig.Voltage.PeakReverseVoltage=-9.0; // -9.0;
         followerTiltConfig.Feedback.SensorToMechanismRatio = 4.*3.*3.*(80./12.); // Sets the gear ratio between rotations of the motor and rotations of the mechnism
 
         leaderTiltConfig.CurrentLimits.StatorCurrentLimit = 15;
@@ -84,6 +79,14 @@ public class ElevatorSubsystem extends SubsystemBase{
         leaderTiltConfig.Slot0.kA = 3.2; // V / rotion/sec^2
         leaderTiltConfig.Slot0.kG = -.14; // -.10 is barely enough to stop it from going down when horizontal
         leaderTiltConfig.Slot0.GravityType=GravityTypeValue.Arm_Cosine;
+        leaderTiltConfig.Slot1.kP = 100.0; // An error of 1 results in 0.1 V output
+        leaderTiltConfig.Slot1.kI = 0.0; // no output for integrated error
+        leaderTiltConfig.Slot1.kD = 0.0; // no output for error derivative
+        leaderTiltConfig.Slot1.kS = 0.1399; // Add output to overcome static friction
+        leaderTiltConfig.Slot1.kV = 10; // Intentionally underspped
+        leaderTiltConfig.Slot1.kA = 3.2; // V / rotion/sec^2
+        leaderTiltConfig.Slot1.kG = -.14; // -.10 is barely enough to stop it from going down when horizontal
+        leaderTiltConfig.Slot1.GravityType=GravityTypeValue.Arm_Cosine;
         leaderTiltConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // No gravity compensation (yet)
         leaderTiltConfig.MotionMagic.MotionMagicCruiseVelocity = .2; // Rot / sec
         leaderTiltConfig.MotionMagic.MotionMagicAcceleration = 1; // Rot / sec^2
@@ -99,7 +102,7 @@ public class ElevatorSubsystem extends SubsystemBase{
         leaderTilt.getConfigurator().apply(leaderTiltConfig);
         leaderTilt.setPosition(-.25, 1); // When vertical, we are actually at -.25
         followerTilt.setControl(followLeaderTiltRequest);
-        leaderTilt.setControl(motionMagicVoltage.withPosition(-0.25));
+        leaderTilt.setControl(requestMotionMagicVoltage.withPosition(-0.25));
 
         // Configure left extension first
         SparkMaxConfig leftExtensionSparkMaxConfig = new SparkMaxConfig();
@@ -157,7 +160,7 @@ public class ElevatorSubsystem extends SubsystemBase{
         }
         return new FunctionalCommand (
             () -> {
-                leaderTilt.setControl(motionMagicVoltage.withPosition((angle/360.0)-.25)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition((angle/360.0)-.25)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
                 System.out.println("Elevator angle set to " + angle);
             },
             () -> {}, //onExecute
@@ -168,6 +171,45 @@ public class ElevatorSubsystem extends SubsystemBase{
                 return arrived; 
             },
             this);
+    }
+
+    public Command makeSlowGoToAngleCmd(double angle){
+        if (angle<minAllowedAngle || angle > maxAllowedAngle) {
+            System.out.println("ASSERTION FAILED: Requested command would set elevator angle out of bounds to " + angle);
+            return this.runOnce(
+                () -> {
+                    System.out.println("This command sets the elevator angle out of bounds to " + angle);
+                }
+            );
+        }
+        return new FunctionalCommand (
+            () -> {
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition((angle/360.0)-.25).withSlot(1)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
+                System.out.println("Elevator angle set to " + angle);
+            },
+            () -> {}, //onExecute
+            (Boolean wasCanceled) -> {}, //onEnd
+            () -> {
+                Boolean arrived = (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25)))<(5.0/360.0);
+                //System.out.println("Elevator angle arrived? Delta " + (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25))) + " so " + arrived); 
+                return arrived; 
+            },
+            this);
+    }
+
+
+    public Command makeReleaseElevatorBrakeCmd(){
+        return this.startEnd(
+            () -> {
+                leaderTilt.setControl(requestCoast);
+                followerTilt.setControl(requestCoast);
+                System.out.println("Elevator set to coast");
+            },
+            () -> {
+                leaderTilt.setControl(requestNeutral);
+                followerTilt.setControl(requestNeutral);
+                System.out.println("Elevator set to neutral");
+            });
     }
 
     public Command makeGoToPositionCmd(double position){
@@ -188,14 +230,4 @@ public class ElevatorSubsystem extends SubsystemBase{
             },
             this);
     }
-
-    public Command releaseBrake(){
-        return this.runEnd(
-            () -> {
-                leftExtensionController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot1);
-                /* release brake */
-            },
-            () -> {/* reenable brake */});
-    }
-
 }
