@@ -7,9 +7,11 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -22,6 +24,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -29,7 +32,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -186,9 +189,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
+        
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        ModuleConfig config = new ModuleConfig(
+            TunerConstants.kWheelRadius.baseUnitMagnitude(),
+            TunerConstants.kSpeedAt12Volts.baseUnitMagnitude(),
+            1.1,
+            DCMotor.getKrakenX60Foc(1),
+            60,
+            1
+        );
+
+
         AutoBuilder.configure(
             () -> {return this.getState().Pose;},                            // Supplier<Pose2d> current robot pose
             (pose) -> {this.seedFieldCentric();},                   // Consumer<Pose2d> reset robot pose
@@ -198,7 +213,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
             ),
-            new RobotConfig(null, null, null, getModuleLocations()),  // PathFollowerConfig path follower configuration
+            new RobotConfig(61.2349699, 5.92, config, getModuleLocations()),  // PathFollowerConfig path follower configuration
             () -> {
                 return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
             }, // BooleanSupplier is robot on red alliance

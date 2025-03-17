@@ -179,7 +179,7 @@ public class RobotContainer {
     public RobotContainer() {
         initializeSubsystems();
         configureBindings();
-        autoChooser = AutoBuilder.buildAutoChooser();
+        autoChooser = AutoBuilder.buildAutoChooser("path1");
     }
 
     private void initializeSubsystems() {
