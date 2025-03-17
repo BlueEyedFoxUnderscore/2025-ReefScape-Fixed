@@ -6,10 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.Supplier;
-
-import javax.sound.sampled.SourceDataLine;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -39,189 +35,181 @@ public class RobotContainer {
     private final CommandXboxController controllerDriver   = new CommandXboxController(0);
     private final CommandXboxController controllerOperator = new CommandXboxController(1);
 
-    private final Command makeSetNewPoseState(PoseState newState) { return Commands.runOnce(() -> previousPoseState = newState); }
-    private final Command makeEffectorFastForward()           { return effectorSubsystem.makeSetSpeed(60.5);} // Top speed = 60.5
-    private final Command makeEffectorPickupAlgae()         { return effectorSubsystem.makeSetSpeed(-50);} // Top speed = 60.5
-    private final Command makeEffectorStop()                  { return effectorSubsystem.makeSetSpeed(0.0);} 
-    private final Command makeEffectorCenterCoral()           { return effectorSubsystem.makeMoveTo(6.0);} 
-    private final Command makeRemoveAlgae_Deposit_EffectorRelease()           { return effectorSubsystem.makeMoveTo(3.0);} 
-    private final Command makeEffectorZeroEncoder()           { return effectorSubsystem.makeZeroEncoder();}
-    private final Command makeEffectorRotateToSafe()          { return effectorSubsystem.makeRotateTo(+ 0.0);}
-    private final Command makeEffectorSubsystem()             { return effectorSubsystem.makeRunSideways(); }
+    private final Command makeSetNewPoseState(PoseState newState)               { return Commands.runOnce(() -> previousPoseState = newState); }
+    private final Command say(String msg)                                       { return Commands.runOnce(() -> System.out.println(msg)); }
+    private final Command makeRobotNOP ()                                       { return Commands.runOnce(() -> {}); } 
 
+    private final Command makeRemoveEitherAlgae_EffectorGrab()                  { return effectorSubsystem.makeSetSpeed(-50, -50);} // Top speed = 60.5
+    private final Command makeEffectorStop()                                    { return effectorSubsystem.makeSetSpeed(0.0, 0.0);} 
+    private final Command makeIntake_CenterCoral()                              { return effectorSubsystem.makeMoveTo(6.0);} 
+    private final Command makeRemoveEitherAlgae_Deposit_EffectorRelease()       { return effectorSubsystem.makeMoveTo(3.0);} 
+    private final Command makeEffector_ZeroEncoder()                            { return effectorSubsystem.makeZeroEncoder();}
 
+    private final Command makeSafe_Step1_ArmLength()                            { return elevatorSubsystem.makeGoToPositionCmd(0);}
+    private final Command makeSafe_Step2_ArmAngle()                             { return elevatorSubsystem.makeGoToAngleCmd(0);}
+    private final Command makeSafe_Step3_EffectorAngle()                        { return effectorSubsystem.makeRotateTo(+ 0.0);}
 
-    private final Command makeElevatorRotateToSafe()              { return elevatorSubsystem.makeGoToAngleCmd(0);}
+    private final Command makeIntake_WaitUntilCoralPresent()                    { return effectorSubsystem.makeWaitUntilCoralPresent();} 
+    private final Command makeIntake_WaitUntilCoralMissing()                    { return effectorSubsystem.makeWaitUntilCoralMissing();} 
 
-    private final Command makeElevatorGoToSafe()                  { return elevatorSubsystem.makeGoToPositionCmd(0);}
+    private final Command makeEffectorDepositCoral()                            { return 
+                                                                                    effectorSubsystem.makeZeroEncoder().andThen(
+                                                                                    effectorSubsystem.makeMoveTo(20.0)); } 
+    private final Command makeEffectorSidewaysDepositCoral()                    { return
+                                                                                    effectorSubsystem.makeZeroEncoder().andThen(
+                                                                                    effectorSubsystem.makeSetSpeed(15, 25),
+                                                                                    Commands.waitSeconds(2),
+                                                                                    makeEffectorStop()); }
 
-    private final Command makeEffectorRotateToIntake()        { return effectorSubsystem.makeRotateTo(+60.0);}
-    private final Command makeElevatorRotateToIntake()            { return elevatorSubsystem.makeGoToAngleCmd(-14.0);}
-    private final Command makeElevatorGoToIntake()                  { return elevatorSubsystem.makeGoToPositionCmd(1.5);}
-    private final Command makeEffectorSlowReverse()           { return effectorSubsystem.makeSetSpeed(-10.0);} 
-    private final Command makeEffectorWaitUntilCoralPresent() { return effectorSubsystem.makeWaitUntilCoralPresent();} 
-    private final Command makeEffectorWaitUntilCoralMissing() { return effectorSubsystem.makeWaitUntilCoralMissing();} 
+    private final Command makeIntake_Step1_EffectorAngle()                      { return effectorSubsystem.makeRotateTo(+60.0);}
+    private final Command makeIntake_Step2_ArmLength()                          { return elevatorSubsystem.makeGoToPositionCmd(1.5);}
+    private final Command makeIntake_Step3_ArmAngle()                           { return elevatorSubsystem.makeGoToAngleCmd(-14.0);}
+    private final Command makeIntake_Step4_EffectorRapidIntake()                { return effectorSubsystem.makeSetSpeed(60.5, 60.5);} // Top speed = 60.5
+    private final Command makeIntake_step5_EffectorSlowReverse()                { return effectorSubsystem.makeSetSpeed(-10.0, -10.0);} 
 
-    private final Command makeEffectorDepositCoral()          { return  effectorSubsystem.makeZeroEncoder()
-        .andThen(effectorSubsystem.makeMoveTo(20.0));} 
-    private final Command makeEffectorSidewaysDepositCoral()          { return  effectorSubsystem.makeZeroEncoder()
-        .andThen(makeEffectorSubsystem()
-        .andThen(Commands.waitSeconds(2))
-        .andThen(makeEffectorStop()));}
-    
-        private final Command makeEffectorRotateToPreL4()        { return effectorSubsystem.makeRotateTo(0.0);} 
-        private final Command makeEffectorRotateToL4()        { return effectorSubsystem.makeRotateTo(+40.0);} 
-        private final Command makeEffectorMoveToL4()              { return effectorSubsystem.makeMoveTo(3.0);} 
-    private final Command makeElevatorRotateToPreL4()              { return elevatorSubsystem.makeGoToAngleCmd(12);}
-    private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(17);}
-    private final Command makeElevatorGoToL4()                    { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
+    private final Command makeL4_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(0.0);} 
+    private final Command makeL4_Step2_Preposition_Coral()                      { return effectorSubsystem.makeMoveTo(3.0);} 
+    private final Command makeL4_Step3_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(12);}
+    private final Command makeL4_Step4_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
+    private final Command makeL4_Step5_Position_EffectorAngle()                 { return effectorSubsystem.makeRotateTo(+40.0);} 
+    private final Command makeL4_Step6_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(17);}
 
-    private final Command makeEffectorRotateToPreRemoveL34Algae()        { return effectorSubsystem.makeRotateTo(0.0);} 
-    private final Command makeElevatorRotateToPreRemoveL34Algae()              { return elevatorSubsystem.makeGoToAngleCmd(12);} //12
-    private final Command makeElevatorGoToRemoveL34Algae()                    { return elevatorSubsystem.makeGoToPositionCmd(15);}
-    private final Command makeElevatorRotateToRemoveL34Algae()              { return elevatorSubsystem.makeGoToAngleCmd(22);}
-    private final Command makeElevatorRotateToPostRemoveL34Algae()              { return elevatorSubsystem.makeGoToAngleCmd(12);}
-    private final Command makeRemoveAlgae_Deposit_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
-    private final Command makeRemoveAlgae_Deposit_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(18);}
+    private final Command makeRemoveHighAlgae_Step1_PreRemove_ArmAngle()        { return elevatorSubsystem.makeGoToAngleCmd(12);} //12
+    private final Command makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle()   { return effectorSubsystem.makeRotateTo(0.0);} 
+    private final Command makeRemoveHighAlgae_Step3_PreRemove_ArmLength()       { return elevatorSubsystem.makeGoToPositionCmd(15);}
+    private final Command makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle()      { return elevatorSubsystem.makeGoToAngleCmd(22);}
+    private final Command makeRemoveHighAlgae_Step5_Remove_ArmAngle()           { return elevatorSubsystem.makeGoToAngleCmd(12);}
 
+    private final Command makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle()         { return elevatorSubsystem.makeGoToAngleCmd(12);}
+    private final Command makeRemoveLowAlgae_Step2_PreRemove_EffectorAngle()    { return effectorSubsystem.makeRotateTo(-10);}
+    private final Command makeRemoveLowAlgae_Step3_PreRemove_ArmLength()        { return elevatorSubsystem.makeGoToPositionCmd(7);}
+    private final Command makeRemoveLowAlgae_Step4_ReadyRemove_ArmAngle()       { return elevatorSubsystem.makeGoToAngleCmd(37);}
+    private final Command makeRemoveLowAlgae_Step5_PartialRemove_ArmAngle()     { return elevatorSubsystem.makeGoToAngleCmd(30);}
+    private final Command makeRemoveLowAlgae_Step6_PartialRemove_ArmLength()    { return elevatorSubsystem.makeGoToPositionCmd(6.5);}
+    private final Command makeRemoveLowAlgae_Step7_Remove_ArmAngle()            { return elevatorSubsystem.makeGoToAngleCmd(12);}
 
-    private final Command makeEffectorRotateToL3()        { return effectorSubsystem.makeRotateTo(+8.0);} 
-    private final Command makeElevatorRotateToPreL3()              { return elevatorSubsystem.makeGoToAngleCmd(19);}
-    private final Command makeElevatorRotateToL3()              { return elevatorSubsystem.makeGoToAngleCmd(23);}
-    private final Command makeElevatorGoToL3()                    { return elevatorSubsystem.makeGoToPositionCmd(13);}
+    private final Command makeRemoveEitherAlgae_Deposit_ArmLength()             { return elevatorSubsystem.makeGoToPositionCmd(0);}
+    private final Command makeRemoveEitherAlgae_Deposit_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(18);}
 
-    private final Command makeRemoveLowAlgaeStep1_PreRemove_EffectorAngle()        { return effectorSubsystem.makeRotateTo(-10);} // -45 good
-    private final Command makeRemoveLowAlgaeStep2_PreRemove_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(7);}
-    private final Command makeRemoveLowAlgaeStep3_ReadyRemove_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(37);} // 42 good
-    private final Command makeRemoveLowAlgaeStep6_Test_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(7.5);} // 3
-    private final Command makeRemoveLowAlgaeStep5_PartialRemove_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(30);} // 30
-    private final Command makeRemoveLowAlgaeStep6_PartialRemove_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(6.5);} // 3
-    private final Command makeRemoveLowAlgaeStep7_Remove_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(12);} // 12
-    private final Command makeElevatorRotateToPreRemoveL23Algae()              { return elevatorSubsystem.makeGoToAngleCmd(12);} // 12
-    
-    
+    private final Command makeL3_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(+8.0);} 
+    private final Command makeL3_Step2_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(19);}
+    private final Command makeL3_Step3_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(13);}
+    private final Command makeL3_Step4_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(23);}
 
-    private final Command makeEffectorRotateToL2()        { return effectorSubsystem.makeRotateTo(0);} 
-    private final Command makeElevatorRotateToPreL2()              { return elevatorSubsystem.makeGoToAngleCmd(30);} //32
-    private final Command makeElevatorRotateToL2()              { return elevatorSubsystem.makeGoToAngleCmd(35);} //37
-    private final Command makeElevatorGoToL2()                    { return elevatorSubsystem.makeGoToPositionCmd(5.5);} //4.5
+    private final Command makeL2_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(0);} 
+    private final Command makeL2_Step2_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(30);}
+    private final Command makeL2_Step4_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(35);}
+    private final Command makeL2_Step3_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(5.5);}
 
-    private final Command makeEffectorRotateToL1()        { return effectorSubsystem.makeRotateTo(-59);} 
-    private final Command makeElevatorRotateToPreL1()              { return elevatorSubsystem.makeGoToAngleCmd(42);}
-    private final Command makeRemoveAlgae_Capture_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(47);}  // 40 was about 2 inches too high
-    private final Command makeElevatorGoToL1()                    { return elevatorSubsystem.makeGoToPositionCmd(1);}
+    private final Command makeL1_Step1_EffectorAngle()                          { return effectorSubsystem.makeRotateTo(-59);} 
+    private final Command makeL1_Step2_ArmLength()                              { return elevatorSubsystem.makeGoToPositionCmd(1);}
+    private final Command makeL1_Step3_ArmAngle()                               { return elevatorSubsystem.makeGoToAngleCmd(47);}
 
-    
-    private final Command makeEffectorRotateToLift()        { return effectorSubsystem.makeRotateTo(90);} 
-    private final Command makeElevatorRotateToLift()              { return elevatorSubsystem.makeGoToAngleCmd(70);}
-    private final Command makeElevatorGoToLift()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
+    private final Command makeLiftPosition_Step1_EffectorAngle()                { return effectorSubsystem.makeRotateTo(90);} 
+    private final Command makeLiftPosition_Step2_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
+    private final Command makeLiftPosition_Step3_ArmAngle()                     { return elevatorSubsystem.makeGoToAngleCmd(70);}
 
-    private final Command say(String msg) {return Commands.runOnce(() -> System.out.println(msg));}
-
-    private final Command makeRobotSafe() {
-        return makeElevatorRotateToPreL4()
-                .andThen(makeElevatorGoToSafe())
-                .andThen(makeElevatorRotateToSafe())
-                .andThen(makeEffectorRotateToSafe())
-                .andThen(makeSetNewPoseState(PoseState.SAFE));
+    private final Command makeRobotSafe() { return
+        makeL4_Step3_Preposition_ArmAngle().andThen(
+        makeSafe_Step1_ArmLength(),
+        makeSafe_Step2_ArmAngle(),
+        makeSafe_Step3_EffectorAngle(),
+        makeSetNewPoseState(PoseState.SAFE));
     };
 
-    private final Command robotIntake                   =  makeRobotSafe()
-                                                          .andThen(makeEffectorRotateToIntake())
-                                                          .andThen(makeElevatorGoToIntake())
-                                                          .andThen(makeElevatorRotateToIntake())
-                                                          .andThen(makeEffectorFastForward()) // Go fast
-                                                          .andThen(makeEffectorWaitUntilCoralPresent())  // Wait until coral present
-                                                          .andThen(makeEffectorSlowReverse()) // Go slow
-                                                          .andThen(makeEffectorWaitUntilCoralMissing())
-                                                          .andThen(makeEffectorZeroEncoder())
-                                                          .andThen(makeEffectorCenterCoral())
-                                                          .andThen(makeSetNewPoseState(PoseState.INTAKE))
-                                                          .finallyDo((interrupted)->{if (interrupted) makeEffectorStop().schedule();});
+    private final Command robotIntake = 
+        makeRobotSafe().andThen(
+        makeIntake_Step1_EffectorAngle(),
+        makeSetNewPoseState(PoseState.INTAKE),
+        makeIntake_Step2_ArmLength(),
+        makeIntake_Step3_ArmAngle(),
+        makeIntake_Step4_EffectorRapidIntake(),
+        makeIntake_WaitUntilCoralPresent(),
+        makeIntake_step5_EffectorSlowReverse(),
+        makeIntake_WaitUntilCoralMissing(),
+        makeEffector_ZeroEncoder(),
+        makeIntake_CenterCoral())
+        .finallyDo((interrupted)->{if (interrupted) makeEffectorStop().schedule();});
 
-                                                    
-    private final Command robotToL4 = makeRobotSafe()
-        .andThen(makeEffectorRotateToPreL4())
-        .andThen(makeEffectorMoveToL4())
-        .andThen(makeElevatorRotateToPreL4())
-        .andThen(makeElevatorGoToL4())
-        .andThen(makeEffectorRotateToL4())
-        .andThen(makeElevatorRotateToL4())
-        .andThen(makeSetNewPoseState(PoseState.L4));
+    private final Command robotToL4 =
+        makeRobotSafe().andThen(
+        makeL4_Step1_Preposition_EffectorAngle(),
+        makeL4_Step2_Preposition_Coral(),
+        makeL4_Step3_Preposition_ArmAngle(),
+        makeL4_Step4_Preposition_ArmLength(),
+        makeSetNewPoseState(PoseState.L4),
+        makeL4_Step5_Position_EffectorAngle(),
+        makeL4_Step6_Position_ArmAngle());
 
-    private final Command makeRobotNOP () { return Commands.runOnce(() -> {}); } 
-    
-    private final Command robotRemove34Algae = new ConditionalCommand(
-        makeElevatorRotateToPreRemoveL34Algae()
-        .andThen(makeEffectorRotateToPreRemoveL34Algae())
-        .andThen(makeElevatorGoToRemoveL34Algae())
-        .andThen(makeElevatorRotateToRemoveL34Algae())
-        .andThen(makeEffectorPickupAlgae())
-        .andThen(Commands.waitSeconds(.8))
-        .andThen(makeElevatorRotateToPostRemoveL34Algae())
-        .andThen(makeRemoveAlgae_Deposit_ArmLength())
-        .andThen(makeRemoveAlgae_Deposit_ArmAngle())
-        .andThen(makeEffectorZeroEncoder())
-        .andThen(makeRemoveAlgae_Deposit_EffectorRelease())
-        .andThen(Commands.waitSeconds(.5))
-        .andThen(makeRemoveAlgae_Capture_ArmAngle())
-        .andThen(makeSetNewPoseState(PoseState.L1))
-        , makeRobotNOP(), ()->previousPoseState==PoseState.L4);   
+    private final Command robotRemoveHighAlgae = new ConditionalCommand(
+        makeRemoveHighAlgae_Step1_PreRemove_ArmAngle().andThen(
+        makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle(),
+        makeRemoveHighAlgae_Step3_PreRemove_ArmLength(),
+        makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle(),
+        makeSetNewPoseState(PoseState.L3),
+        makeRemoveEitherAlgae_EffectorGrab(),
+        Commands.waitSeconds(.8),
+        makeRemoveHighAlgae_Step5_Remove_ArmAngle(),
+        makeRemoveEitherAlgae_Deposit_ArmLength(),
+        makeRemoveEitherAlgae_Deposit_ArmAngle(),
+        makeEffector_ZeroEncoder(),
+        makeRemoveEitherAlgae_Deposit_EffectorRelease(),
+        Commands.waitSeconds(.5),
+        makeL1_Step3_ArmAngle(),
+        makeSetNewPoseState(PoseState.L1)), makeRobotNOP(), ()->previousPoseState==PoseState.L4);   
 
-    private final Command robotRemove23Algae = new ConditionalCommand(
-        makeElevatorRotateToPreRemoveL23Algae()
-        .andThen(makeRemoveLowAlgaeStep1_PreRemove_EffectorAngle())
-        .andThen(Commands.waitSeconds(1))
-        .andThen(makeRemoveLowAlgaeStep2_PreRemove_ArmLength())
-        .andThen(Commands.waitSeconds(1))
-        .andThen(makeSetNewPoseState(PoseState.L3))
-        .andThen(makeRemoveLowAlgaeStep3_ReadyRemove_ArmAngle())
-        .andThen(Commands.waitSeconds(1))
-        .andThen(makeEffectorPickupAlgae())
-        .andThen(Commands.waitSeconds(.8))
-        .andThen(makeRemoveLowAlgaeStep5_PartialRemove_ArmAngle())
-        .andThen(Commands.waitSeconds(1))
-        .andThen(makeRemoveLowAlgaeStep6_PartialRemove_ArmLength())
-        .andThen(Commands.waitSeconds(1))
-        .andThen(makeRemoveLowAlgaeStep7_Remove_ArmAngle())
-        .andThen(Commands.waitSeconds(1))
-        .andThen(makeRemoveAlgae_Deposit_ArmLength())
-        .andThen(makeRemoveAlgae_Deposit_ArmAngle())
-        .andThen(makeEffectorZeroEncoder())
-        .andThen(makeRemoveAlgae_Deposit_EffectorRelease())
-        .andThen(Commands.waitSeconds(.5))
-        .andThen(makeRemoveAlgae_Capture_ArmAngle())
-        .andThen(makeSetNewPoseState(PoseState.L1))
-        , makeRobotNOP(), ()->previousPoseState==PoseState.L4);
+    private final Command robotRemoveLowAlgae = new ConditionalCommand(
+        makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle().andThen(
+        makeRemoveLowAlgae_Step2_PreRemove_EffectorAngle(),
+        Commands.waitSeconds(1),
+        makeRemoveLowAlgae_Step3_PreRemove_ArmLength(),
+        Commands.waitSeconds(1),
+        makeSetNewPoseState(PoseState.L3),
+        makeRemoveLowAlgae_Step4_ReadyRemove_ArmAngle(),
+        Commands.waitSeconds(1),
+        makeRemoveEitherAlgae_EffectorGrab(),
+        Commands.waitSeconds(.8),
+        makeRemoveLowAlgae_Step5_PartialRemove_ArmAngle(),
+        Commands.waitSeconds(1),
+        makeRemoveLowAlgae_Step6_PartialRemove_ArmLength(),
+        Commands.waitSeconds(1),
+        makeRemoveLowAlgae_Step7_Remove_ArmAngle(),
+        Commands.waitSeconds(1),
+        makeRemoveEitherAlgae_Deposit_ArmLength(),
+        makeRemoveEitherAlgae_Deposit_ArmAngle(),
+        makeEffector_ZeroEncoder(),
+        makeRemoveEitherAlgae_Deposit_EffectorRelease(),
+        Commands.waitSeconds(.5),
+        makeL1_Step3_ArmAngle(),
+        makeSetNewPoseState(PoseState.L1)), makeRobotNOP(), ()->previousPoseState==PoseState.L4);
 
-    private final Command robotToL3 = makeRobotSafe()
-        .andThen(makeEffectorRotateToL3())
-        .andThen(makeElevatorRotateToPreL3())
-        .andThen(makeElevatorGoToL3())
-        .andThen(makeElevatorRotateToL3())
-        .andThen(makeSetNewPoseState(PoseState.L3));
+    private final Command robotToL3 =
+        makeRobotSafe().andThen(
+        makeL3_Step1_Preposition_EffectorAngle(),
+        makeL3_Step2_Preposition_ArmAngle(),
+        makeL3_Step3_Preposition_ArmLength(),
+        makeSetNewPoseState(PoseState.L3),
+        makeL3_Step4_Position_ArmAngle());
 
-    private final Command robotToL2 = makeRobotSafe()
-        .andThen(makeEffectorRotateToL2())
-        .andThen(makeElevatorRotateToPreL2())
-        .andThen(makeElevatorGoToL2())
-        .andThen(makeElevatorRotateToL2())
-        .andThen(makeSetNewPoseState(PoseState.L2));
+    private final Command robotToL2 = makeRobotSafe().andThen(
+        makeL2_Step1_Preposition_EffectorAngle(),
+        makeL2_Step2_Preposition_ArmAngle(),
+        makeL2_Step3_Preposition_ArmLength(),
+        makeSetNewPoseState(PoseState.L2),
+        makeL2_Step4_Position_ArmAngle());
                                                       
-        private final Command robotToL1 = makeRobotSafe()
-        .andThen(makeEffectorRotateToL1())
-        .andThen(makeElevatorRotateToPreL1())
-        .andThen(makeElevatorGoToL1())
-        .andThen(makeRemoveAlgae_Capture_ArmAngle())
+    private final Command robotToL1 = makeRobotSafe()
+        .andThen(makeL1_Step1_EffectorAngle())
+        .andThen(makeL1_Step2_ArmLength())
+        .andThen(makeL1_Step3_ArmAngle())
         .andThen(makeSetNewPoseState(PoseState.L1));                                                      
 
-        private final Command robotToLift = makeRobotSafe()
-        .andThen(makeEffectorRotateToLift())
-        .andThen(makeElevatorGoToLift())
-        .andThen(makeElevatorRotateToLift())
+    private final Command robotToLift = makeRobotSafe()
+        .andThen(makeLiftPosition_Step1_EffectorAngle())
+        .andThen(makeLiftPosition_Step2_ArmLength())
+        .andThen(makeLiftPosition_Step3_ArmAngle())
         .andThen(makeSetNewPoseState(PoseState.LIFT));                
        
-
     private final Command robotDrive = makeRobotSafe();
 
     private final Command robotDepositCoral = new ConditionalCommand(makeEffectorDepositCoral(), say("sideways").andThen(makeEffectorSidewaysDepositCoral()), ()->{return previousPoseState!=PoseState.L1;});
@@ -299,8 +287,8 @@ public class RobotContainer {
         controllerOperator.a().onTrue(robotToL2);
         controllerOperator.rightBumper().onTrue(robotToL1);
         controllerOperator.back().onTrue(robotToLift);
-        controllerOperator.povUp().onTrue(robotRemove34Algae);
-        controllerOperator.povDown().onTrue(robotRemove23Algae);
+        controllerOperator.povUp().onTrue(robotRemoveHighAlgae);
+        controllerOperator.povDown().onTrue(robotRemoveLowAlgae);
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
