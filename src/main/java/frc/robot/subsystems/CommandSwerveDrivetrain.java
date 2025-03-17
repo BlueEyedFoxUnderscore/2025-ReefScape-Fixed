@@ -194,30 +194,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        RobotConfig config = null;
-        try{
-          config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-          // Handle exception as needed
-          e.printStackTrace();
-        }    
-
-        AutoBuilder.configure(
-            () -> {return this.getState().Pose;},                            // Supplier<Pose2d> current robot pose
-            (pose) -> {this.seedFieldCentric();},                   // Consumer<Pose2d> reset robot pose
-            () -> {return this.getState().Speeds;},              // Supplier<ChassisSpeeds> robot-relative speeds
-            (speeds, driveSpeeds) -> {this.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));}, // Consumer<ChassisSpeeds>
-            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-            ),
-            config,  // PathFollowerConfig path follower configuration
-            () -> {
-                return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-            }, // BooleanSupplier is robot on red alliance
-            this                                       // Subsystem requirement
-        );
-
     }
 
     /**

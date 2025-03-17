@@ -14,8 +14,14 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.controllers.PathFollowingController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -174,9 +180,34 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final CommandSwerveDrivetrain drivetrain;
+
 
     public RobotContainer() {
+        drivetrain = TunerConstants.createDrivetrain();
+
+        RobotConfig config = null;
+        try{
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }    
+        AutoBuilder.configure(
+            () -> {return drivetrain.getState().Pose;},                            // Supplier<Pose2d> current robot pose
+            (pose) -> {drivetrain.seedFieldCentric();},                   // Consumer<Pose2d> reset robot pose
+            () -> {return drivetrain.getState().Speeds;},              // Supplier<ChassisSpeeds> robot-relative speeds
+            (speeds, driveSpeeds) -> {drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));}, // Consumer<ChassisSpeeds>
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            config,  // PathFollowerConfig path follower configuration
+            () -> {
+                return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            }, // BooleanSupplier is robot on red alliance
+            drivetrain                                       // Subsystem requirement
+        );
         initializeSubsystems();
         configureBindings();
     }
@@ -239,6 +270,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return new PathPlannerAuto("path1");
+        return new PathPlannerAuto("auto1");
     }
 }
