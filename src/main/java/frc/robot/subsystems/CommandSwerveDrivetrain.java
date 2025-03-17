@@ -9,10 +9,17 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.controllers.PathFollowingController;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -182,6 +189,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        AutoBuilder.configure(
+            () -> {return this.getState().Pose;},                            // Supplier<Pose2d> current robot pose
+            (pose) -> {this.seedFieldCentric();},                   // Consumer<Pose2d> reset robot pose
+            () -> {return this.getState().Speeds;},              // Supplier<ChassisSpeeds> robot-relative speeds
+            (speeds, driveSpeeds) -> {this.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));}, // Consumer<ChassisSpeeds>
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            new RobotConfig(null, null, null, getModuleLocations()),  // PathFollowerConfig path follower configuration
+            () -> {
+                return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            }, // BooleanSupplier is robot on red alliance
+            this                                       // Subsystem requirement
+        );
+
     }
 
     /**
