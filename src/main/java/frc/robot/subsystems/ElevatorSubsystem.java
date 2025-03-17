@@ -108,7 +108,7 @@ public class ElevatorSubsystem extends SubsystemBase{
             .smartCurrentLimit(40)
             .inverted(true)
             .voltageCompensation(10.0);
-        leftExtensionSparkMaxConfig.absoluteEncoder
+        leftExtensionSparkMaxConfig.encoder
             // positionConversionFactor sets the position that encoder reports when making one full revolution.
             .positionConversionFactor(1.7716535329818726)
             .velocityConversionFactor(0.029527559876441956);
@@ -126,7 +126,7 @@ public class ElevatorSubsystem extends SubsystemBase{
             .smartCurrentLimit(40)
             .voltageCompensation(10.0)
             .follow(leftExtensionSparkMax, true);
-        rightExtensionSparkMaxConfig.absoluteEncoder
+        rightExtensionSparkMaxConfig.encoder
             // positionConversionFactor sets the position that encoder reports when making one full revolution.
             .positionConversionFactor(1.7716535329818726)
             .velocityConversionFactor(0.029527559876441956);

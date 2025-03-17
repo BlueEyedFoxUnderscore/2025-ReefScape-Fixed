@@ -62,7 +62,7 @@ public class RobotContainer {
                                                                                     makeEffectorStop()); }
 
     private final Command makeIntake_Step1_EffectorAngle()                      { return effectorSubsystem.makeRotateTo(+60.0);}
-    private final Command makeIntake_Step2_ArmLength()                          { return elevatorSubsystem.makeGoToPositionCmd(1.5);}
+    private final Command makeIntake_Step2_ArmLength()                          { return elevatorSubsystem.makeGoToPositionCmd(2.66);}
     private final Command makeIntake_Step3_ArmAngle()                           { return elevatorSubsystem.makeGoToAngleCmd(-14.0);}
     private final Command makeIntake_Step4_EffectorRapidIntake()                { return effectorSubsystem.makeSetSpeed(60.5, 60.5);} // Top speed = 60.5
     private final Command makeIntake_step5_EffectorSlowReverse()                { return effectorSubsystem.makeSetSpeed(-10.0, -10.0);} 
@@ -70,22 +70,22 @@ public class RobotContainer {
     private final Command makeL4_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(0.0);} 
     private final Command makeL4_Step2_Preposition_Coral()                      { return effectorSubsystem.makeMoveTo(3.0);} 
     private final Command makeL4_Step3_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(12);}
-    private final Command makeL4_Step4_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
+    private final Command makeL4_Step4_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(46.5);}
     private final Command makeL4_Step5_Position_EffectorAngle()                 { return effectorSubsystem.makeRotateTo(+40.0);} 
     private final Command makeL4_Step6_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(17);}
 
     private final Command makeRemoveHighAlgae_Step1_PreRemove_ArmAngle()        { return elevatorSubsystem.makeGoToAngleCmd(12);} //12
     private final Command makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle()   { return effectorSubsystem.makeRotateTo(0.0);} 
-    private final Command makeRemoveHighAlgae_Step3_PreRemove_ArmLength()       { return elevatorSubsystem.makeGoToPositionCmd(15);}
+    private final Command makeRemoveHighAlgae_Step3_PreRemove_ArmLength()       { return elevatorSubsystem.makeGoToPositionCmd(26.6);}
     private final Command makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle()      { return elevatorSubsystem.makeGoToAngleCmd(22);}
     private final Command makeRemoveHighAlgae_Step5_Remove_ArmAngle()           { return elevatorSubsystem.makeGoToAngleCmd(12);}
 
     private final Command makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle()         { return elevatorSubsystem.makeGoToAngleCmd(12);}
     private final Command makeRemoveLowAlgae_Step2_PreRemove_EffectorAngle()    { return effectorSubsystem.makeRotateTo(-10);}
-    private final Command makeRemoveLowAlgae_Step3_PreRemove_ArmLength()        { return elevatorSubsystem.makeGoToPositionCmd(7);}
+    private final Command makeRemoveLowAlgae_Step3_PreRemove_ArmLength()        { return elevatorSubsystem.makeGoToPositionCmd(12.4);}
     private final Command makeRemoveLowAlgae_Step4_ReadyRemove_ArmAngle()       { return elevatorSubsystem.makeGoToAngleCmd(37);}
     private final Command makeRemoveLowAlgae_Step5_PartialRemove_ArmAngle()     { return elevatorSubsystem.makeGoToAngleCmd(30);}
-    private final Command makeRemoveLowAlgae_Step6_PartialRemove_ArmLength()    { return elevatorSubsystem.makeGoToPositionCmd(6.5);}
+    private final Command makeRemoveLowAlgae_Step6_PartialRemove_ArmLength()    { return elevatorSubsystem.makeGoToPositionCmd(11.5);}
     private final Command makeRemoveLowAlgae_Step7_Remove_ArmAngle()            { return elevatorSubsystem.makeGoToAngleCmd(12);}
 
     private final Command makeRemoveEitherAlgae_Deposit_ArmLength()             { return elevatorSubsystem.makeGoToPositionCmd(0);}
@@ -93,16 +93,16 @@ public class RobotContainer {
 
     private final Command makeL3_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(+8.0);} 
     private final Command makeL3_Step2_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(19);}
-    private final Command makeL3_Step3_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(13);}
+    private final Command makeL3_Step3_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(23);}
     private final Command makeL3_Step4_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(23);}
 
     private final Command makeL2_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(0);} 
     private final Command makeL2_Step2_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(30);}
     private final Command makeL2_Step4_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(35);}
-    private final Command makeL2_Step3_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(5.5);}
+    private final Command makeL2_Step3_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(9.75);}
 
     private final Command makeL1_Step1_EffectorAngle()                          { return effectorSubsystem.makeRotateTo(-59);} 
-    private final Command makeL1_Step2_ArmLength()                              { return elevatorSubsystem.makeGoToPositionCmd(1);}
+    private final Command makeL1_Step2_ArmLength()                              { return elevatorSubsystem.makeGoToPositionCmd(1.8);}
     private final Command makeL1_Step3_ArmAngle()                               { return elevatorSubsystem.makeGoToAngleCmd(47);}
 
     private final Command makeLiftPosition_Step1_EffectorAngle()                { return effectorSubsystem.makeRotateTo(90);} 
@@ -221,7 +221,7 @@ public class RobotContainer {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.05).withRotationalDeadband(MaxAngularRate * 0.05) // Add a 2% deadband
+            .withDeadband(MaxSpeed * 0.0).withRotationalDeadband(MaxAngularRate * 0.0) // Add a 2% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive `tors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -249,8 +249,8 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-controllerDriver.getLeftY() * Math.abs(controllerDriver.getLeftY()) * MaxSpeed * (controllerDriver.rightBumper().getAsBoolean()?0.2:1.0)) // Drive forward with negative Y (forward)
-                    .withVelocityY(-controllerDriver.getLeftX() * Math.abs(controllerDriver.getLeftX()) * MaxSpeed * (controllerDriver.rightBumper().getAsBoolean()?0.2:1.0)) // Drive left with negative X (left)
+                drive.withVelocityX(-controllerDriver.getLeftY() * Math.abs(controllerDriver.getLeftY()) *  MaxSpeed * (controllerDriver.rightBumper().getAsBoolean()?0.1:1.0)) // Drive forward with negative Y (forward)
+                    .withVelocityY(-controllerDriver.getLeftX() * Math.abs(controllerDriver.getLeftX()) * MaxSpeed * (controllerDriver.rightBumper().getAsBoolean()?0.1:1.0)) // Drive left with negative X (left)
                     .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
