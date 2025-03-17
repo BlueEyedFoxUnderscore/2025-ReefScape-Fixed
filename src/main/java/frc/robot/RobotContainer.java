@@ -13,6 +13,7 @@ import javax.sound.sampled.SourceDataLine;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -175,11 +176,9 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final SendableChooser<Command> autoChooser;
     public RobotContainer() {
         initializeSubsystems();
         configureBindings();
-        autoChooser = AutoBuilder.buildAutoChooser("path1");
     }
 
     private void initializeSubsystems() {
@@ -240,6 +239,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
+        return new PathPlannerAuto("path1");
     }
 }
