@@ -194,15 +194,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        ModuleConfig config = new ModuleConfig(
-            TunerConstants.kWheelRadius.baseUnitMagnitude(),
-            TunerConstants.kSpeedAt12Volts.baseUnitMagnitude(),
-            1.1,
-            DCMotor.getKrakenX60Foc(1),
-            60,
-            1
-        );
-
+        RobotConfig config = null;
+        try{
+          config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+          // Handle exception as needed
+          e.printStackTrace();
+        }    
 
         AutoBuilder.configure(
             () -> {return this.getState().Pose;},                            // Supplier<Pose2d> current robot pose
@@ -213,7 +211,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
             ),
-            new RobotConfig(61.2349699, 5.92, config, getModuleLocations()),  // PathFollowerConfig path follower configuration
+            config,  // PathFollowerConfig path follower configuration
             () -> {
                 return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
             }, // BooleanSupplier is robot on red alliance
