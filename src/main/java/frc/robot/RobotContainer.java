@@ -41,8 +41,10 @@ public class RobotContainer {
 
     private final Command makeSetNewPoseState(PoseState newState) { return Commands.runOnce(() -> previousPoseState = newState); }
     private final Command makeEffectorFastForward()           { return effectorSubsystem.makeSetSpeed(60.5);} // Top speed = 60.5
+    private final Command makeEffectorPickupAlgae()         { return effectorSubsystem.makeSetSpeed(-50);} // Top speed = 60.5
     private final Command makeEffectorStop()                  { return effectorSubsystem.makeSetSpeed(0.0);} 
     private final Command makeEffectorCenterCoral()           { return effectorSubsystem.makeMoveTo(6.0);} 
+    private final Command makeRemoveAlgae_Deposit_EffectorRelease()           { return effectorSubsystem.makeMoveTo(3.0);} 
     private final Command makeEffectorZeroEncoder()           { return effectorSubsystem.makeZeroEncoder();}
     private final Command makeEffectorRotateToSafe()          { return effectorSubsystem.makeRotateTo(+ 0.0);}
     private final Command makeEffectorSubsystem()             { return effectorSubsystem.makeRunSideways(); }
@@ -51,9 +53,9 @@ public class RobotContainer {
 
     private final Command makeElevatorRotateToSafe()              { return elevatorSubsystem.makeGoToAngleCmd(0);}
 
-    private final Command makeElevatorGoToSafe()                  { return elevatorSubsystem.makeGoToPositionCmd(0.0);}
+    private final Command makeElevatorGoToSafe()                  { return elevatorSubsystem.makeGoToPositionCmd(0);}
 
-    private final Command makeEffectorRotateToIntake()        { return effectorSubsystem.makeRotateTo(+55.0);}
+    private final Command makeEffectorRotateToIntake()        { return effectorSubsystem.makeRotateTo(+60.0);}
     private final Command makeElevatorRotateToIntake()            { return elevatorSubsystem.makeGoToAngleCmd(-14.0);}
     private final Command makeElevatorGoToIntake()                  { return elevatorSubsystem.makeGoToPositionCmd(1.5);}
     private final Command makeEffectorSlowReverse()           { return effectorSubsystem.makeSetSpeed(-10.0);} 
@@ -67,30 +69,51 @@ public class RobotContainer {
         .andThen(Commands.waitSeconds(2))
         .andThen(makeEffectorStop()));}
     
-    private final Command makeEffectorRotateToL4()        { return effectorSubsystem.makeRotateTo(+40.0);} 
-    private final Command makeEffectorMoveToL4()              { return effectorSubsystem.makeMoveTo(3.0);} 
+        private final Command makeEffectorRotateToPreL4()        { return effectorSubsystem.makeRotateTo(0.0);} 
+        private final Command makeEffectorRotateToL4()        { return effectorSubsystem.makeRotateTo(+40.0);} 
+        private final Command makeEffectorMoveToL4()              { return effectorSubsystem.makeMoveTo(3.0);} 
     private final Command makeElevatorRotateToPreL4()              { return elevatorSubsystem.makeGoToAngleCmd(12);}
     private final Command makeElevatorRotateToL4()              { return elevatorSubsystem.makeGoToAngleCmd(17);}
     private final Command makeElevatorGoToL4()                    { return elevatorSubsystem.makeGoToPositionCmd(26.5);}
+
+    private final Command makeEffectorRotateToPreRemoveL34Algae()        { return effectorSubsystem.makeRotateTo(0.0);} 
+    private final Command makeElevatorRotateToPreRemoveL34Algae()              { return elevatorSubsystem.makeGoToAngleCmd(12);} //12
+    private final Command makeElevatorGoToRemoveL34Algae()                    { return elevatorSubsystem.makeGoToPositionCmd(15);}
+    private final Command makeElevatorRotateToRemoveL34Algae()              { return elevatorSubsystem.makeGoToAngleCmd(22);}
+    private final Command makeElevatorRotateToPostRemoveL34Algae()              { return elevatorSubsystem.makeGoToAngleCmd(12);}
+    private final Command makeRemoveAlgae_Deposit_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
+    private final Command makeRemoveAlgae_Deposit_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(18);}
+
 
     private final Command makeEffectorRotateToL3()        { return effectorSubsystem.makeRotateTo(+8.0);} 
     private final Command makeElevatorRotateToPreL3()              { return elevatorSubsystem.makeGoToAngleCmd(19);}
     private final Command makeElevatorRotateToL3()              { return elevatorSubsystem.makeGoToAngleCmd(23);}
     private final Command makeElevatorGoToL3()                    { return elevatorSubsystem.makeGoToPositionCmd(13);}
 
+    private final Command makeRemoveLowAlgaeStep1_PreRemove_EffectorAngle()        { return effectorSubsystem.makeRotateTo(-10);} // -45 good
+    private final Command makeRemoveLowAlgaeStep2_PreRemove_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(7);}
+    private final Command makeRemoveLowAlgaeStep3_ReadyRemove_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(37);} // 42 good
+    private final Command makeRemoveLowAlgaeStep6_Test_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(7.5);} // 3
+    private final Command makeRemoveLowAlgaeStep5_PartialRemove_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(30);} // 30
+    private final Command makeRemoveLowAlgaeStep6_PartialRemove_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(6.5);} // 3
+    private final Command makeRemoveLowAlgaeStep7_Remove_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(12);} // 12
+    private final Command makeElevatorRotateToPreRemoveL23Algae()              { return elevatorSubsystem.makeGoToAngleCmd(12);} // 12
+    
+    
+
     private final Command makeEffectorRotateToL2()        { return effectorSubsystem.makeRotateTo(0);} 
-    private final Command makeElevatorRotateToPreL2()              { return elevatorSubsystem.makeGoToAngleCmd(32);}
-    private final Command makeElevatorRotateToL2()              { return elevatorSubsystem.makeGoToAngleCmd(37);}
-    private final Command makeElevatorGoToL2()                    { return elevatorSubsystem.makeGoToPositionCmd(4.5);}
+    private final Command makeElevatorRotateToPreL2()              { return elevatorSubsystem.makeGoToAngleCmd(30);} //32
+    private final Command makeElevatorRotateToL2()              { return elevatorSubsystem.makeGoToAngleCmd(35);} //37
+    private final Command makeElevatorGoToL2()                    { return elevatorSubsystem.makeGoToPositionCmd(5.5);} //4.5
 
     private final Command makeEffectorRotateToL1()        { return effectorSubsystem.makeRotateTo(-59);} 
     private final Command makeElevatorRotateToPreL1()              { return elevatorSubsystem.makeGoToAngleCmd(42);}
-    private final Command makeElevatorRotateToL1()              { return elevatorSubsystem.makeGoToAngleCmd(47);}  // 40 was about 2 inches too high
+    private final Command makeRemoveAlgae_Capture_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(47);}  // 40 was about 2 inches too high
     private final Command makeElevatorGoToL1()                    { return elevatorSubsystem.makeGoToPositionCmd(1);}
 
     
     private final Command makeEffectorRotateToLift()        { return effectorSubsystem.makeRotateTo(90);} 
-    private final Command makeElevatorRotateToLift()              { return elevatorSubsystem.makeGoToAngleCmd(80);}
+    private final Command makeElevatorRotateToLift()              { return elevatorSubsystem.makeGoToAngleCmd(70);}
     private final Command makeElevatorGoToLift()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
 
     private final Command say(String msg) {return Commands.runOnce(() -> System.out.println(msg));}
@@ -118,12 +141,58 @@ public class RobotContainer {
 
                                                     
     private final Command robotToL4 = makeRobotSafe()
-        .andThen(makeEffectorRotateToL4())
+        .andThen(makeEffectorRotateToPreL4())
         .andThen(makeEffectorMoveToL4())
         .andThen(makeElevatorRotateToPreL4())
         .andThen(makeElevatorGoToL4())
+        .andThen(makeEffectorRotateToL4())
         .andThen(makeElevatorRotateToL4())
         .andThen(makeSetNewPoseState(PoseState.L4));
+
+    private final Command makeRobotNOP () { return Commands.runOnce(() -> {}); } 
+    
+    private final Command robotRemove34Algae = new ConditionalCommand(
+        makeElevatorRotateToPreRemoveL34Algae()
+        .andThen(makeEffectorRotateToPreRemoveL34Algae())
+        .andThen(makeElevatorGoToRemoveL34Algae())
+        .andThen(makeElevatorRotateToRemoveL34Algae())
+        .andThen(makeEffectorPickupAlgae())
+        .andThen(Commands.waitSeconds(.8))
+        .andThen(makeElevatorRotateToPostRemoveL34Algae())
+        .andThen(makeRemoveAlgae_Deposit_ArmLength())
+        .andThen(makeRemoveAlgae_Deposit_ArmAngle())
+        .andThen(makeEffectorZeroEncoder())
+        .andThen(makeRemoveAlgae_Deposit_EffectorRelease())
+        .andThen(Commands.waitSeconds(.5))
+        .andThen(makeRemoveAlgae_Capture_ArmAngle())
+        .andThen(makeSetNewPoseState(PoseState.L1))
+        , makeRobotNOP(), ()->previousPoseState==PoseState.L4);   
+
+    private final Command robotRemove23Algae = new ConditionalCommand(
+        makeElevatorRotateToPreRemoveL23Algae()
+        .andThen(makeRemoveLowAlgaeStep1_PreRemove_EffectorAngle())
+        .andThen(Commands.waitSeconds(1))
+        .andThen(makeRemoveLowAlgaeStep2_PreRemove_ArmLength())
+        .andThen(Commands.waitSeconds(1))
+        .andThen(makeSetNewPoseState(PoseState.L3))
+        .andThen(makeRemoveLowAlgaeStep3_ReadyRemove_ArmAngle())
+        .andThen(Commands.waitSeconds(1))
+        .andThen(makeEffectorPickupAlgae())
+        .andThen(Commands.waitSeconds(.8))
+        .andThen(makeRemoveLowAlgaeStep5_PartialRemove_ArmAngle())
+        .andThen(Commands.waitSeconds(1))
+        .andThen(makeRemoveLowAlgaeStep6_PartialRemove_ArmLength())
+        .andThen(Commands.waitSeconds(1))
+        .andThen(makeRemoveLowAlgaeStep7_Remove_ArmAngle())
+        .andThen(Commands.waitSeconds(1))
+        .andThen(makeRemoveAlgae_Deposit_ArmLength())
+        .andThen(makeRemoveAlgae_Deposit_ArmAngle())
+        .andThen(makeEffectorZeroEncoder())
+        .andThen(makeRemoveAlgae_Deposit_EffectorRelease())
+        .andThen(Commands.waitSeconds(.5))
+        .andThen(makeRemoveAlgae_Capture_ArmAngle())
+        .andThen(makeSetNewPoseState(PoseState.L1))
+        , makeRobotNOP(), ()->previousPoseState==PoseState.L4);
 
     private final Command robotToL3 = makeRobotSafe()
         .andThen(makeEffectorRotateToL3())
@@ -143,17 +212,18 @@ public class RobotContainer {
         .andThen(makeEffectorRotateToL1())
         .andThen(makeElevatorRotateToPreL1())
         .andThen(makeElevatorGoToL1())
-        .andThen(makeElevatorRotateToL1())
+        .andThen(makeRemoveAlgae_Capture_ArmAngle())
         .andThen(makeSetNewPoseState(PoseState.L1));                                                      
 
         private final Command robotToLift = makeRobotSafe()
         .andThen(makeEffectorRotateToLift())
         .andThen(makeElevatorGoToLift())
         .andThen(makeElevatorRotateToLift())
-        .andThen(makeSetNewPoseState(PoseState.LIFT));                                                      
+        .andThen(makeSetNewPoseState(PoseState.LIFT));                
+       
 
     private final Command robotDrive = makeRobotSafe();
-    
+
     private final Command robotDepositCoral = new ConditionalCommand(makeEffectorDepositCoral(), say("sideways").andThen(makeEffectorSidewaysDepositCoral()), ()->{return previousPoseState!=PoseState.L1;});
     
     private final Command kickerGoToPosition = kickerSubsystem.makeGoToPositionCmd(() -> controllerDriver.getRightTriggerAxis());
@@ -229,6 +299,8 @@ public class RobotContainer {
         controllerOperator.a().onTrue(robotToL2);
         controllerOperator.rightBumper().onTrue(robotToL1);
         controllerOperator.back().onTrue(robotToLift);
+        controllerOperator.povUp().onTrue(robotRemove34Algae);
+        controllerOperator.povDown().onTrue(robotRemove23Algae);
 
         drivetrain.registerTelemetry(logger::telemeterize);
 

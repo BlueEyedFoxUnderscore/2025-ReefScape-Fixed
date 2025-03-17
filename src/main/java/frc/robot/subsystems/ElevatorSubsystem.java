@@ -17,6 +17,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -56,6 +57,7 @@ public class ElevatorSubsystem extends SubsystemBase{
     private SparkMax leftExtensionSparkMax = new SparkMax(31, MotorType.kBrushless);
     private SparkMax rightExtensionSparkMax = new SparkMax(32, MotorType.kBrushless);
     private SparkClosedLoopController leftExtensionController = leftExtensionSparkMax.getClosedLoopController();
+    private RelativeEncoder leftExtensionEncoder = leftExtensionSparkMax.getEncoder();
 
     public void init() {
 
@@ -113,7 +115,8 @@ public class ElevatorSubsystem extends SubsystemBase{
         leftExtensionSparkMaxConfig.closedLoop
         .pidf(.9, 0, 0, .00001, ClosedLoopSlot.kSlot0)
         .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot1)
-        .outputRange(-.3, .4, ClosedLoopSlot.kSlot0);  // -0.2 and 0.4 are really fast
+        //.outputRange(-.3, .4, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
+        .outputRange(-.2, .3, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
 
         leftExtensionSparkMax.configure(leftExtensionSparkMaxConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
@@ -140,6 +143,7 @@ public class ElevatorSubsystem extends SubsystemBase{
             }
         });
 
+        leftExtensionEncoder.setPosition(0);
         leftExtensionController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0);
     }
 
