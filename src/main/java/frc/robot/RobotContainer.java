@@ -65,9 +65,9 @@ public class RobotContainer {
     private final Command makeIntake_ZeroEncoder()                              { return effectorSubsystem.makeZeroEncoder();}
     private final Command makeIntake_WaitUntilCoralPresent()                    { return effectorSubsystem.makeWaitUntilCoralPresent();} 
     private final Command makeIntake_WaitUntilCoralMissing()                    { return effectorSubsystem.makeWaitUntilCoralMissing();} 
-    private final Command makeIntake_Step1_EffectorAngle()                      { return effectorSubsystem.makeRotateTo(+60.0);}
-    private final Command makeIntake_Step2_ArmLength()                          { return elevatorSubsystem.makeGoToPositionCmd(2.66);}
-    private final Command makeIntake_Step3_ArmAngle()                           { return elevatorSubsystem.makeGoToAngleCmd(-18.0);} // -14
+    private final Command makeIntake_Step1_EffectorAngle()                      { return effectorSubsystem.makeRotateTo(+53.0);} // 60 is catching on motor
+    private final Command makeIntake_Step2_ArmLength()                          { return elevatorSubsystem.makeGoToPositionCmd(1.0);}
+    private final Command makeIntake_Step3_ArmAngle()                           { return elevatorSubsystem.makeGoToAngleCmd(-13.5);} // -14 touches
     private final Command makeIntake_Step4_EffectorRapidIntake()                { return effectorSubsystem.makeSetSpeed(60.5, 60.5);} // Top speed = 60.5
     private final Command makeIntake_Step5_EffectorSlowReverse()                { return effectorSubsystem.makeSetSpeed(-10.0, -10.0);} 
     private final Command makeIntake_Stop()                                     { return effectorSubsystem.makeSetSpeed(0.0, 0.0);}
