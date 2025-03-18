@@ -197,7 +197,9 @@ public class RobotContainer {
             () -> {return drivetrain.getState().Pose;},                            // Supplier<Pose2d> current robot pose
             drivetrain::resetPose,                   // Consumer<Pose2d> reset robot pose
             () -> {return drivetrain.getState().Speeds;},              // Supplier<ChassisSpeeds> robot-relative speeds
-            (speeds, ffs) -> {drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));}, // Consumer<ChassisSpeeds>
+            (speeds, ffs) -> {drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds)
+                .withWheelForceFeedforwardsX(ffs.robotRelativeForcesXNewtons())
+                .withWheelForceFeedforwardsY(ffs.robotRelativeForcesYNewtons()));}, // Consumer<ChassisSpeeds>
             new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
