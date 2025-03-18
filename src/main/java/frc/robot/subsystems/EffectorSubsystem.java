@@ -109,22 +109,13 @@ public class EffectorSubsystem extends SubsystemBase {
         );
     }
 
-    public Command makeSetSpeed(double ips)
+    public Command makeSetSpeed(double ipsleft, double ipsright)
     {
         return this.runOnce(() -> {
-                rightIntakeSparkClosedLoopController.setReference(ips, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-                leftIntakeSparkMaxClosedLoopController.setReference(ips, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-                System.out.println("Effector speed set to " + ips);
+                rightIntakeSparkClosedLoopController.setReference(ipsright, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+                leftIntakeSparkMaxClosedLoopController.setReference(ipsleft, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+                System.out.println("Effector left, righty speed set to " + ipsleft + ", " + ipsright);
             }); 
-    }
-    
-    public Command makeRunSideways()
-    {
-        return this.runOnce(() -> { // onInit
-            rightIntakeSparkClosedLoopController.setReference(25, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-            leftIntakeSparkMaxClosedLoopController.setReference(15, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-            System.out.println("Effector ejecting sideways ");
-        });
     }
     
     public Command makeMoveTo(double position)
