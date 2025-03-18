@@ -195,9 +195,9 @@ public class RobotContainer {
         }    
         AutoBuilder.configure(
             () -> {return drivetrain.getState().Pose;},                            // Supplier<Pose2d> current robot pose
-            (pose) -> {drivetrain.seedFieldCentric();},                   // Consumer<Pose2d> reset robot pose
+            drivetrain::resetPose,                   // Consumer<Pose2d> reset robot pose
             () -> {return drivetrain.getState().Speeds;},              // Supplier<ChassisSpeeds> robot-relative speeds
-            (speeds, driveSpeeds) -> {drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));}, // Consumer<ChassisSpeeds>
+            (speeds, ffs) -> {drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));}, // Consumer<ChassisSpeeds>
             new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
