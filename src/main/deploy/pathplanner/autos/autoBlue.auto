@@ -9,6 +9,12 @@
           "data": {
             "pathName": "blue_l1"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "toL1"
+          }
         }
       ]
     }

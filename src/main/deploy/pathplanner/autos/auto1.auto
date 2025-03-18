@@ -7,7 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "mid_l1"
+            "pathName": "mid_l;top"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "removeHighAlgae"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "toL3"
           }
         }
       ]
