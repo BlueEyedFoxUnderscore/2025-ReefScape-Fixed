@@ -94,6 +94,11 @@ public class RobotContainer {
         makeIntake_CenterCoral())
         .finallyDo((interrupted)->{if (interrupted) makeIntake_Stop().schedule();});
 
+    private final Command robotReIntake = 
+        makeIntake_Step5_EffectorSlowReverse().andThen(
+        makeIntake_WaitUntilCoralMissing(),
+        makeIntake_ZeroEncoder(),
+        makeIntake_CenterCoral());
 
     private Command makeRemoveEitherAlgae_Deposit_ArmLength()             { return elevatorSubsystem.makeGoToPositionCmd(0);}
     private Command makeRemoveEitherAlgae_Deposit_ArmAngle()              { return elevatorSubsystem.makeGoToAngleCmd(18);}
@@ -129,9 +134,9 @@ public class RobotContainer {
     private Command makeRemoveLowAlgae_Step6_PartialRemove_ArmLength()    { return elevatorSubsystem.makeGoToPositionCmd(7);}
     private Command makeRemoveLowAlgae_Step7_PartialRemove_ArmAngle()     { return elevatorSubsystem.makeSlowGoToAngleCmd(35);}
     private Command makeRemoveLowAlgae_Step7_2_PreRemove_EffectorAngle()  { return effectorSubsystem.makeRotateTo(-70);}
-    private Command makeRemoveLowAlgae_Step8_PartialRemove2_ArmLength()    { return elevatorSubsystem.makeGoToPositionCmd(6.25);}
+    private Command makeRemoveLowAlgae_Step8_PartialRemove2_ArmLength()   { return elevatorSubsystem.makeGoToPositionCmd(6.25);}
     private Command makeRemoveLowAlgae_Step9_Remove_ArmAngle()            { return elevatorSubsystem.makeSlowGoToAngleCmd(12);}
-    private Command makeRemoveLowAlgae_Step10_PrepareDrop_EffectorAngle()  { return effectorSubsystem.makeRotateTo(30);}
+    private Command makeRemoveLowAlgae_Step10_PrepareDrop_EffectorAngle() { return effectorSubsystem.makeRotateTo(30);}
     private final Command robotRemoveLowAlgae = new ConditionalCommand(
         makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle().andThen(
         makeRemoveLowAlgae_Step2_PreRemove_EffectorAngle(),
@@ -197,29 +202,43 @@ public class RobotContainer {
     private final Command makeL1Second_Step1_EffectorAngle()                          { return effectorSubsystem.makeRotateTo(-59);} 
     private final Command makeL1Second_Step2_ArmLength()                              { return elevatorSubsystem.makeGoToPositionCmd(1.8);}
     private final Command makeL1Second_Step3_ArmAngle()                               { return elevatorSubsystem.makeGoToAngleCmd(47);}
-    private final Command robotToL1Second = makeRobotSafe()
-        .andThen(makeL1Second_Step1_EffectorAngle())
-        .andThen(makeL1Second_Step2_ArmLength())
-        .andThen(makeL1Second_Step3_ArmAngle())
-        .andThen(makeSetNewPoseState(PoseState.L1));                                                      
+    private final Command robotToL1Second =
+        makeRobotSafe().andThen(
+        makeL1Second_Step1_EffectorAngle(),
+        makeL1Second_Step2_ArmLength(),
+        makeL1Second_Step3_ArmAngle(),
+        makeSetNewPoseState(PoseState.L1));                                                      
 
     private final Command makeL1First_Step1_EffectorAngle()                          { return effectorSubsystem.makeRotateTo(-55);}  // 59 lvl 2
     private final Command makeL1First_Step2_ArmLength()                              { return elevatorSubsystem.makeGoToPositionCmd(0);}
     private final Command makeL1First_Step3_ArmAngle()                               { return elevatorSubsystem.makeGoToAngleCmd(57);}
-    private final Command robotToL1First = makeRobotSafe()
-        .andThen(makeL1First_Step1_EffectorAngle())
-        .andThen(makeL1First_Step2_ArmLength())
-        .andThen(makeL1First_Step3_ArmAngle())
-        .andThen(makeSetNewPoseState(PoseState.L1));                                                      
+    private final Command robotToL1First =
+        makeRobotSafe().andThen(
+        makeL1First_Step1_EffectorAngle(),
+        makeL1First_Step2_ArmLength(),
+        makeL1First_Step3_ArmAngle(),
+        makeSetNewPoseState(PoseState.L1));                                                      
     
     private final Command makeLiftPosition_Step1_EffectorAngle()                { return effectorSubsystem.makeRotateTo(90);} 
     private final Command makeLiftPosition_Step2_ArmLength()                    { return elevatorSubsystem.makeGoToPositionCmd(0);}
     private final Command makeLiftPosition_Step3_ArmAngle()                     { return elevatorSubsystem.makeGoToAngleCmd(70);}
-    private final Command robotToLift = makeRobotSafe()
-        .andThen(makeLiftPosition_Step1_EffectorAngle())
-        .andThen(makeLiftPosition_Step2_ArmLength())
-        .andThen(makeLiftPosition_Step3_ArmAngle())
-        .andThen(makeSetNewPoseState(PoseState.LIFT));                
+    private final Command robotToLift = makeRobotSafe().andThen(
+        makeLiftPosition_Step1_EffectorAngle(),
+        makeLiftPosition_Step2_ArmLength(),
+        makeLiftPosition_Step3_ArmAngle(),
+        makeSetNewPoseState(PoseState.LIFT),
+        say("Moving kicker"),
+        kickerSubsystem.makeKickerPrepareLift()
+        );               
+    
+    private final Command robotLift = new ConditionalCommand (
+        say("Lifting").andThen(
+        kickerSubsystem.makeKickerLift()),
+        say("Not Lifting"),
+        ()->{return previousPoseState==PoseState.LIFT;}
+    );
+
+
 
     private final Command robotReleaseBrake = elevatorSubsystem.makeReleaseElevatorBrakeCmd();
        
@@ -295,8 +314,6 @@ public class RobotContainer {
             )
         );
 
-        kickerSubsystem.setDefaultCommand(kickerGoToPosition);
-        
         ////joystick.povUp().onTrue(effectorRotateToLevel4.andThen(elevatorGoToL4Angle));
         ////joystick.povRight().onTrue(elevatorGoToZero.andThen(effectorRotateToLevel3));
         ////joystick.povDown().onTrue(effectorRotateToLevel2);
@@ -326,10 +343,14 @@ public class RobotContainer {
         controllerOperator.a().onTrue(robotToL2);
         controllerOperator.rightBumper().onTrue(robotToL1First);
         controllerOperator.rightStick().onTrue(robotToL1Second);
-        controllerOperator.back().onTrue(robotToLift);
         controllerOperator.povUp().onTrue(robotRemoveHighAlgae);
         controllerOperator.povDown().onTrue(robotRemoveLowAlgae);
         controllerOperator.start().toggleOnTrue(robotReleaseBrake);
+
+        kickerSubsystem.setDefaultCommand(kickerGoToPosition);
+        controllerOperator.back().onTrue(robotToLift);
+        controllerOperator.leftStick().onTrue(robotLift);
+        controllerOperator.leftTrigger().onTrue(robotReIntake);
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

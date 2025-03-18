@@ -17,10 +17,12 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class KickerSubsystem extends SubsystemBase {
     private SparkMax kickerSparkMax = new SparkMax(21, MotorType.kBrushless);
+    private SparkMax liftSparkMax = new SparkMax(22, MotorType.kBrushless);
     private SparkClosedLoopController kickerController;
     private AbsoluteEncoder kickerAbsoluteEncoder = kickerSparkMax.getAbsoluteEncoder();
 
@@ -31,7 +33,8 @@ public class KickerSubsystem extends SubsystemBase {
 
     private final static double
         kickerPosRetracted = 92 /* degrees */,
-        kickerPosExtended = 200 /* degrees */;
+        kickerPosExtended = 200 /* degrees */,
+        kickerPreLift = 92+80 /* degrees */;
     
     public void init() {
         SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
@@ -80,4 +83,28 @@ public class KickerSubsystem extends SubsystemBase {
             }
         );
     }
+
+    public Command makeKickerPrepareLift(){
+        return this.runEnd(
+            () -> {
+                kickerController.setReference(kickerPreLift, ControlType.kPosition,ClosedLoopSlot.kSlot0);
+            },
+            () -> {
+            }
+        );
+
+    }
+    public Command makeKickerLift(){
+        return new FunctionalCommand (
+            () -> {
+                kickerController.setReference(kickerPosRetracted, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+                liftSparkMax.setVoltage(1.5);
+            },
+            () -> {},
+            (Boolean canceled) -> {liftSparkMax.setVoltage(0);},
+            () -> {return kickerAbsoluteEncoder.getPosition()<95.0;},
+            this
+        );
+    }
+
 }
