@@ -79,7 +79,8 @@ public class EffectorSubsystem extends SubsystemBase {
             .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder);
         
         pivotSparkMax.configure(sparkMaxPivotConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
-
+        leftIntakeEncoder .setPosition(6);
+        rightIntakeEncoder.setPosition(6);
         rightIntakeSparkClosedLoopController.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
         leftIntakeSparkMaxClosedLoopController.setReference(0, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
 
