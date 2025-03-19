@@ -423,6 +423,11 @@ public class RobotContainer {
         ()->{return previousPoseState==PoseState.LIFT;}
     );
 
+    private final Command robotAutoKick = Commands.race(
+        kickerSubsystem.makeKickerAutoKick(),
+        Commands.waitSeconds(3)
+    );
+
 
 
     private final Command robotReleaseBrake = elevatorSubsystem.makeReleaseElevatorBrakeCmd();

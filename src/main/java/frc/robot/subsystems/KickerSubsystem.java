@@ -92,8 +92,18 @@ public class KickerSubsystem extends SubsystemBase {
             () -> {
             }
         );
-
     }
+
+    public Command makeKickerAutoKick(){
+        return this.runEnd(
+            () -> {
+                kickerController.setReference(kickerPosExtended, ControlType.kPosition,ClosedLoopSlot.kSlot0);
+            },
+            () -> {
+            }
+        );
+    }
+
     public Command makeKickerLift(DoubleSupplier speed){
         return new FunctionalCommand (
             () -> {},
