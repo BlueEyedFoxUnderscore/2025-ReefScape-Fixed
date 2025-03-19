@@ -94,13 +94,13 @@ public class KickerSubsystem extends SubsystemBase {
         );
 
     }
-    public Command makeKickerLift(){
+    public Command makeKickerLift(DoubleSupplier speed){
         return new FunctionalCommand (
+            () -> {},
             () -> {
                 kickerController.setReference(kickerPosRetracted, ControlType.kPosition, ClosedLoopSlot.kSlot0);
-                liftSparkMax.setVoltage(1.5);
+                liftSparkMax.setVoltage(12*speed.getAsDouble());
             },
-            () -> {},
             (Boolean canceled) -> {liftSparkMax.setVoltage(0);},
             () -> {return kickerAbsoluteEncoder.getPosition()<95.0;},
             this

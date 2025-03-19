@@ -233,7 +233,7 @@ public class RobotContainer {
     
     private final Command robotLift = new ConditionalCommand (
         say("Lifting").andThen(
-        kickerSubsystem.makeKickerLift()),
+        kickerSubsystem.makeKickerLift(controllerOperator::getLeftTriggerAxis)),
         say("Not Lifting"),
         ()->{return previousPoseState==PoseState.LIFT;}
     );
