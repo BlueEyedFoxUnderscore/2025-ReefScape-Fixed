@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "mid_l;top"
+            "pathName": "StartToL4"
           }
         },
         {
@@ -26,6 +26,18 @@
           "type": "named",
           "data": {
             "name": "depositCoral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L4 to coral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "removeLowAlgae"
           }
         }
       ]
