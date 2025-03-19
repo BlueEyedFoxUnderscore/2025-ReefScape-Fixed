@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.751,
-        "y": 0.58
+        "x": 5.9224,
+        "y": 0.199
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.222700270134523,
-        "y": 1.5643044160804145
+        "x": 5.394100270134523,
+        "y": 1.1833044160804145
       },
       "isLocked": false,
       "linkedName": "Station"

@@ -482,6 +482,7 @@ public class RobotContainer {
             robotToL3.           setName("toL3");
             robotToL4.           setName("toL4");
             robotToLift.         setName("toLift");
+            robotAutoKick.       setName("autoKick");
         }
 
         register(
@@ -495,7 +496,8 @@ public class RobotContainer {
             robotToL2,
             robotToL3,
             robotToL4,
-            robotToLift
+            robotToLift,
+            robotAutoKick
         );
 
         AutoBuilder.configure(
@@ -521,7 +523,7 @@ public class RobotContainer {
         initializeSubsystems();
         configureBindings();
 
-        m_chooser.setDefaultOption("Default Auto", "RL4 plus low algae");
+        m_chooser.setDefaultOption("RL4 LA SCORE", "RL4 LA SCORE");
         m_chooser.addOption("Red side", "autoRed");
         m_chooser.addOption("Blue side", "autoBlue");
         SmartDashboard.putData("Auto choices", m_chooser);
