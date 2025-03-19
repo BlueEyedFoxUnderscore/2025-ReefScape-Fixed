@@ -183,22 +183,34 @@ public class RobotContainer {
     }
 
     private final Command robotRemoveHighAlgae = new ConditionalCommand(
-            makeRemoveHighAlgae_Step1_PreRemove_ArmAngle().andThen(
-                    makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle(),
-                    makeRemoveHighAlgae_Step3_PreRemove_ArmLength(),
-                    makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle(),
-                    makeSetNewPoseState(PoseState.L3),
-                    makeRemoveEitherAlgae_EffectorGrab(),
-                    Commands.waitSeconds(.8),
-                    makeRemoveHighAlgae_Step5_Remove_ArmAngle(),
-                    makeRemoveEitherAlgae_Deposit_ArmLength(),
-                    makeRemoveEitherAlgae_Deposit_ArmAngle(),
-                    makeIntake_ZeroEncoder(),
-                    makeRemoveEitherAlgae_Deposit_EffectorRelease(),
-                    Commands.waitSeconds(.5),
-                    makeL1Second_Step3_ArmAngle(),
-                    makeSetNewPoseState(PoseState.L1)),
-            makeRobotNOP(), () -> previousPoseState == PoseState.L4);
+        say("REMOVING HIGH ALGAE").andThen(
+        say("makeRemoveHighAlgae_Step1_PreRemove_ArmAngle").andThen(
+        makeRemoveHighAlgae_Step1_PreRemove_ArmAngle(),
+        say("makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle"),
+        makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle(),
+        say("makeRemoveHighAlgae_Step3_PreRemove_ArmLength"),
+        makeRemoveHighAlgae_Step3_PreRemove_ArmLength(),
+        say("makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle"),
+        makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle(),
+        makeSetNewPoseState(PoseState.L3),
+        say("makeRemoveEitherAlgae_EffectorGrab"),
+        makeRemoveEitherAlgae_EffectorGrab(),
+        Commands.waitSeconds(.8),
+        say("makeRemoveHighAlgae_Step5_Remove_ArmAngle"),
+        makeRemoveHighAlgae_Step5_Remove_ArmAngle(),
+        say("makeRemoveEitherAlgae_Deposit_ArmLength"),
+        makeRemoveEitherAlgae_Deposit_ArmLength(),
+        say("makeRemoveEitherAlgae_Deposit_ArmAngle"),
+        makeRemoveEitherAlgae_Deposit_ArmAngle(),
+        say("makeIntake_ZeroEncoder"),
+        makeIntake_ZeroEncoder(),
+        say("makeRemoveEitherAlgae_Deposit_EffectorRelease"),
+        makeRemoveEitherAlgae_Deposit_EffectorRelease(),
+        Commands.waitSeconds(.5),
+        say("makeL1Second_Step3_ArmAngle"),
+        makeL1Second_Step3_ArmAngle(),
+        say("--------------------")),
+        makeSetNewPoseState(PoseState.L1)), say("Tried to do high algae, NOT in PoseState.L4"), ()->previousPoseState==PoseState.L4);   
 
     private Command makeRemoveEitherAlgae_EffectorGrab() {
         return effectorSubsystem.makeSetSpeed(-50, -50);
@@ -276,38 +288,30 @@ public class RobotContainer {
                     makeSetNewPoseState(PoseState.L1)),
             makeRobotNOP(), () -> previousPoseState == PoseState.L4);
 
-    private final Command makeL4_Step1_Preposition_EffectorAngle() {
-        return effectorSubsystem.makeRotateTo(0.0);
-    }
-
-    private final Command makeL4_Step2_Preposition_Coral() {
-        return effectorSubsystem.makeMoveTo(3.0);
-    }
-
-    private final Command makeL4_Step3_Preposition_ArmAngle() {
-        return elevatorSubsystem.makeGoToAngleCmd(12);
-    }
-
-    private final Command makeL4_Step4_Preposition_ArmLength() {
-        return elevatorSubsystem.makeGoToPositionCmd(46.5);
-    }
-
-    private final Command makeL4_Step5_Position_EffectorAngle() {
-        return effectorSubsystem.makeRotateTo(+40.0);
-    }
-
-    private final Command makeL4_Step6_Position_ArmAngle() {
-        return elevatorSubsystem.makeGoToAngleCmd(17);
-    }
-
-    private final Command robotToL4 = makeRobotSafe().andThen(
-            makeL4_Step1_Preposition_EffectorAngle(),
-            makeL4_Step2_Preposition_Coral(),
-            makeL4_Step3_Preposition_ArmAngle(),
-            makeL4_Step4_Preposition_ArmLength(),
-            makeSetNewPoseState(PoseState.L4),
-            makeL4_Step5_Position_EffectorAngle(),
-            makeL4_Step6_Position_ArmAngle());
+    private final Command makeL4_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeRotateTo(0.0);} 
+    private final Command makeL4_Step2_Preposition_Coral()                      { return effectorSubsystem.makeMoveTo(3.0);} 
+    private final Command makeL4_Step3_Preposition_ArmAngle()                   { return elevatorSubsystem.makeGoToAngleCmd(12);}
+    private final Command makeL4_Step4_Preposition_ArmLength()                  { return elevatorSubsystem.makeGoToPositionCmd(46);}
+    private final Command makeL4_Step5_Position_EffectorAngle()                 { return effectorSubsystem.makeRotateTo(+40.0);} 
+    private final Command makeL4_Step6_Position_ArmAngle()                      { return elevatorSubsystem.makeGoToAngleCmd(17);}
+    private final Command robotToL4 =
+        say("ROBOT TO L4").andThen(
+        makeRobotSafe(),
+        say("makeL4_Step1_Preposition_EffectorAngle"),
+        makeL4_Step1_Preposition_EffectorAngle(),
+        say("makeL4_Step2_Preposition_Coral"),
+        makeL4_Step2_Preposition_Coral(),
+        say("makeL4_Step3_Preposition_ArmAngle"),
+        makeL4_Step3_Preposition_ArmAngle(),
+        say("makeL4_Step4_Preposition_ArmLength"),
+        makeL4_Step4_Preposition_ArmLength(),
+        say("makeSetNewPoseState(PoseState.L4)"),
+        makeSetNewPoseState(PoseState.L4),
+        say("makeL4_Step5_Position_EffectorAngle"),
+        makeL4_Step5_Position_EffectorAngle(),
+        say("makeL4_Step6_Position_ArmAngle()"),
+        makeL4_Step6_Position_ArmAngle(),
+        say("----------------------------------"));
 
     private final Command makeL3_Step1_Preposition_EffectorAngle() {
         return effectorSubsystem.makeRotateTo(+8.0);
@@ -404,20 +408,22 @@ public class RobotContainer {
     }
 
     private final Command robotToLift = makeRobotSafe().andThen(
-            makeLiftPosition_Step1_EffectorAngle(),
-            makeLiftPosition_Step2_ArmLength(),
-            makeLiftPosition_Step3_ArmAngle(),
-            makeSetNewPoseState(PoseState.LIFT),
-            say("Moving kicker"),
-            kickerSubsystem.makeKickerPrepareLift());
+        makeLiftPosition_Step1_EffectorAngle(),
+        makeLiftPosition_Step2_ArmLength(),
+        makeLiftPosition_Step3_ArmAngle(),
+        makeSetNewPoseState(PoseState.LIFT),
+        say("Moving kicker"),
+        kickerSubsystem.makeKickerPrepareLift()
+        );               
+    
+    private final Command robotLift = new ConditionalCommand (
+        say("Lifting").andThen(
+        kickerSubsystem.makeKickerLift(controllerOperator::getLeftTriggerAxis)),
+        say("Not Lifting"),
+        ()->{return previousPoseState==PoseState.LIFT;}
+    );
 
-    private final Command robotLift = new ConditionalCommand(
-            say("Lifting").andThen(
-                    kickerSubsystem.makeKickerLift()),
-            say("Not Lifting"),
-            () -> {
-                return previousPoseState == PoseState.LIFT;
-            });
+
 
     private final Command robotReleaseBrake = elevatorSubsystem.makeReleaseElevatorBrakeCmd();
 

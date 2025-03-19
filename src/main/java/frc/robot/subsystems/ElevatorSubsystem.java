@@ -219,13 +219,14 @@ public class ElevatorSubsystem extends SubsystemBase{
         return new FunctionalCommand (
             () -> {
                 leftExtensionController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
-                System.out.println("Elevator position set to " + position);
+                System.out.println("ELEVATOR TRAVELING TO " + position);
             }, // onInit
             () -> {}, //onExecute
             (Boolean wasCanceled) -> {}, //onEnd
             () -> {
                 Boolean arrived = (Math.abs(((leftExtensionSparkMax.getEncoder().getPosition())-position))<.25);
                 //System.out.println("at position? " + Math.abs(((leftExtensionSparkMax.getEncoder().getPosition())-position)) + " so " + arrived); 
+                if (arrived) System.out.println("ELEVATOR ARRIVED.");
                 return arrived; 
             },
             this);
