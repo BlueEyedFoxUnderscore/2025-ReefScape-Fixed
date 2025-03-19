@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -445,6 +446,8 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain;
 
+    private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
     public RobotContainer() {
         drivetrain = TunerConstants.createDrivetrain();
 
@@ -485,18 +488,14 @@ public class RobotContainer {
         );
 
         AutoBuilder.configure(
-                () -> {
-                    return drivetrain.getState().Pose;
-                }, // Supplier<Pose2d> current robot pose
+                () -> {return drivetrain.getState().Pose;}, // Supplier<Pose2d> current robot pose
                 drivetrain::resetPose, // Consumer<Pose2d> reset robot pose
-                () -> {
-                    return drivetrain.getState().Speeds;
-                }, // Supplier<ChassisSpeeds> robot-relative speeds
+                () -> {return drivetrain.getState().Speeds;}, // Supplier<ChassisSpeeds> robot-relative speeds
                 (speeds, ffs) -> {
                     drivetrain.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds)
                             .withWheelForceFeedforwardsX(ffs.robotRelativeForcesXNewtons())
                             .withWheelForceFeedforwardsY(ffs.robotRelativeForcesYNewtons()));
-                }, // Consumer<ChassisSpeeds>
+                        }, // Consumer<ChassisSpeeds>
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
                                                 // holonomic drive trains
                         new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
@@ -510,6 +509,11 @@ public class RobotContainer {
         );
         initializeSubsystems();
         configureBindings();
+
+        m_chooser.setDefaultOption("Default Auto", "auto1");
+        m_chooser.addOption("Red side", "autoRed");
+        m_chooser.addOption("Blue side", "autoBlue");
+        SmartDashboard.putData("Auto choices", m_chooser);
         
     }
 
@@ -582,6 +586,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return new PathPlannerAuto("autoRed");
+        return new PathPlannerAuto(m_chooser.getSelected());
     }
 }
