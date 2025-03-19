@@ -593,6 +593,9 @@ public class RobotContainer {
         controllerOperator.leftStick().onTrue(robotLift);
         controllerOperator.leftTrigger().onTrue(robotReIntake);
 
+        controllerDriver.povUp().onTrue(robotAutoKick);
+
+
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 

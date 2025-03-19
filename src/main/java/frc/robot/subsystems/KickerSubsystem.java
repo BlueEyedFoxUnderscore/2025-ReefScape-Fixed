@@ -95,11 +95,9 @@ public class KickerSubsystem extends SubsystemBase {
     }
 
     public Command makeKickerAutoKick(){
-        return this.runEnd(
+        return this.run(
             () -> {
-                kickerController.setReference(kickerPosExtended, ControlType.kPosition,ClosedLoopSlot.kSlot0);
-            },
-            () -> {
+                kickerController.setReference(kickerPosExtended, ControlType.kPosition, kickerAbsoluteEncoder.getPosition()<140.0?ClosedLoopSlot.kSlot0:ClosedLoopSlot.kSlot1);
             }
         );
     }
