@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.811,
-        "y": 4.19
+        "x": 5.77,
+        "y": 3.95
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.120921212210182,
-        "y": 3.286261500868065
+        "x": 6.079921212210182,
+        "y": 3.0462615008680647
       },
       "isLocked": false,
-      "linkedName": "DepositedL4"
+      "linkedName": "atcoral"
     },
     {
       "anchor": {
@@ -24,7 +24,7 @@
         "y": 1.4179637424478462
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Station"
     }
   ],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "New Folder",
