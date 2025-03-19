@@ -21,6 +21,12 @@
           "data": {
             "name": "toL4"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "robotDepositCoral"
+          }
         }
       ]
     }
