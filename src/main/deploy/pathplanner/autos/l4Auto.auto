@@ -13,12 +13,6 @@
         {
           "type": "named",
           "data": {
-            "name": "removeHighAlgae"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "toL4"
           }
         },
