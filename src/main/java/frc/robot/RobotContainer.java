@@ -516,7 +516,7 @@ public class RobotContainer {
         initializeSubsystems();
         configureBindings();
 
-        m_chooser.setDefaultOption("Default Auto", "l4Auto");
+        m_chooser.setDefaultOption("Default Auto", "RL4 plus low algae");
         m_chooser.addOption("Red side", "autoRed");
         m_chooser.addOption("Blue side", "autoBlue");
         SmartDashboard.putData("Auto choices", m_chooser);

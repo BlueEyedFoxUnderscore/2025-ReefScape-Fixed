@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.061,
-        "y": 4.19
+        "x": 6.120921212210182,
+        "y": 3.286261500868065
       },
       "isLocked": false,
       "linkedName": "DepositedL4"
     },
     {
       "anchor": {
-        "x": 5.811,
-        "y": 4.0
+        "x": 6.751,
+        "y": 0.58
       },
       "prevControl": {
-        "x": 6.060847706754774,
-        "y": 3.991275125824375
+        "x": 6.597905755336986,
+        "y": 1.4179637424478462
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "atcoral"
+      "isLocked": true,
+      "linkedName": "Station"
     }
   ],
   "rotationTargets": [],
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "New Folder",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
