@@ -12,7 +12,7 @@
         "y": 1.1182812499999988
       },
       "isLocked": false,
-      "linkedName": "Station"
+      "linkedName": "Processor"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "coral"
+      "linkedName": "Station"
     }
   ],
   "rotationTargets": [],
