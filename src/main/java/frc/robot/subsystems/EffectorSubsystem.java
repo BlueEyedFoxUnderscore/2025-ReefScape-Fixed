@@ -144,4 +144,4 @@ public class EffectorSubsystem extends SubsystemBase {
             System.out.println("Effector encoders zeroed");
         });
     }
-}
+} 
