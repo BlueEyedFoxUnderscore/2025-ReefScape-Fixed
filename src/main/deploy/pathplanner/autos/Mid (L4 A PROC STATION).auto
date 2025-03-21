@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start Bottom to SE L4"
+            "pathName": "Starting RL4 to RL4"
           }
         },
         {
@@ -17,15 +17,27 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "depositCoral"
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "SE L4 to A"
+            "pathName": "L4 to coral"
           }
         },
         {
@@ -37,7 +49,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SE A to Proc"
+            "pathName": "RL4 to STATION"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "drive"
           }
         },
         {

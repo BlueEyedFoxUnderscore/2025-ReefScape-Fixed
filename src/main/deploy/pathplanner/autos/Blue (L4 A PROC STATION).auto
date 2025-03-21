@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Starting RL4 to RL4"
+            "pathName": "Start Top to NE"
           }
         },
         {
@@ -17,27 +17,15 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "depositCoral"
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "L4 to coral"
+            "pathName": "NE L4 to A"
           }
         },
         {
@@ -49,19 +37,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RL4 to STATION"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "drive"
+            "pathName": "NE A to Proc"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "autoKick"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SCORE to STATION"
           }
         }
       ]
