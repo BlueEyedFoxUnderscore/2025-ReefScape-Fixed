@@ -63,6 +63,66 @@
           "data": {
             "name": "autoKick"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SCORE to STATION"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeCoral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SCORE to DLRL4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "toL4"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "depositCoral"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DLRL4 to DLRA"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "removeLowAlgae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "New Path"
+          }
         }
       ]
     }

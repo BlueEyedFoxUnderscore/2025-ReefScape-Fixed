@@ -59,6 +59,7 @@ public class EffectorSubsystem extends SubsystemBase {
        
         rightIntakeSparkMax.configure(sparkMaxIntakeConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
         sparkMaxIntakeConfig.inverted(true);
+        sparkMaxIntakeConfig.closedLoop.outputRange(-.95, .95);
         leftIntakeSparkMax.configure(sparkMaxIntakeConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
         

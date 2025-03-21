@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.9224,
-        "y": 0.199
+        "x": 3.980711920529801,
+        "y": 2.5072
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.394100270134523,
-        "y": 1.1833044160804145
+        "x": 3.7320030827201145,
+        "y": 2.4818245395045735
       },
       "isLocked": false,
-      "linkedName": "Station"
+      "linkedName": "DLRL4"
     },
     {
       "anchor": {
-        "x": 5.305,
-        "y": 2.963
+        "x": 3.84,
+        "y": 2.5762
       },
       "prevControl": {
-        "x": 5.866485083523023,
-        "y": 2.0543285384629115
+        "x": 3.82103246180053,
+        "y": 2.3269205734629277
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "SecondL4"
+      "linkedName": "DLRA"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 119.99999999999999
+    "rotation": 60.255118703057704
   },
   "reversed": false,
   "folder": "New Folder",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -90.0
+    "velocity": 0,
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.305,
-        "y": 2.963
+        "x": 3.84,
+        "y": 2.5762
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.939090774172024,
-        "y": 2.007024247121938
+        "x": 3.5230753311258276,
+        "y": 2.1584243377483454
       },
       "isLocked": false,
-      "linkedName": "SecondL4"
+      "linkedName": "DLRA"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 0.199
       },
       "prevControl": {
-        "x": 4.8619291484788425,
-        "y": 2.0270973700384394
+        "x": 5.811258278145695,
+        "y": 1.1629552980132438
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,7 +48,7 @@
   "folder": "New Folder",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 119.99999999999999
+    "rotation": 60.255118703057704
   },
   "useDefaultConstraints": true
 }

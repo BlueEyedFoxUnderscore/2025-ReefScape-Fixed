@@ -73,6 +73,28 @@ public class RobotContainer {
                 effectorSubsystem.makeSetSpeed(0.0, 0.0));
     }
 
+    private Command makeEmergencyExtend() {
+        return Commands.runOnce(() -> {
+            switch (previousPoseState) {
+                case L1:
+                    makeL1First_Step2_ArmLength()       .schedule();
+                    break;
+                case L2:
+                    makeL2_Step3_Preposition_ArmLength().schedule();
+                    break;
+                case L3:
+                    makeL3_Step3_Preposition_ArmLength().schedule();
+                    break;
+                case L4:
+                    makeL4_Step4_Preposition_ArmLength().schedule();
+                    break;
+                default:break;
+            }
+        });
+    }
+
+    private final Command robotEmergencyExtend = makeEmergencyExtend();
+
     private Command makeSafe_Step1_ArmLength() {
         return elevatorSubsystem.makeGoToPositionCmd(0);
     }
@@ -182,7 +204,7 @@ public class RobotContainer {
         return elevatorSubsystem.makeGoToAngleCmd(12);
     }
 
-    private final Command robotRemoveHighAlgae = new ConditionalCommand(
+    private final Command robotRemoveHighAlgaeAuto = new ConditionalCommand(
         say("REMOVING HIGH ALGAE").andThen(
         say("makeRemoveHighAlgae_Step1_PreRemove_ArmAngle").andThen(
         makeRemoveHighAlgae_Step1_PreRemove_ArmAngle(),
@@ -209,6 +231,36 @@ public class RobotContainer {
         Commands.waitSeconds(.5),
         say("makeL1Second_Step3_ArmAngle"),
         makeL1Second_Step3_ArmAngle(),
+        say("--------------------")),
+        makeSetNewPoseState(PoseState.L1)), say("Tried to do high algae, NOT in PoseState.L4"), ()->previousPoseState==PoseState.L4);   
+    
+    private final Command robotRemoveHighAlgae = new ConditionalCommand(
+        say("REMOVING HIGH ALGAE").andThen(
+        say("makeRemoveHighAlgae_Step1_PreRemove_ArmAngle").andThen(
+        makeRemoveHighAlgae_Step1_PreRemove_ArmAngle(),
+        say("makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle"),
+        makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle(),
+        say("makeRemoveHighAlgae_Step3_PreRemove_ArmLength"),
+        makeRemoveHighAlgae_Step3_PreRemove_ArmLength(),
+        say("makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle"),
+        makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle(),
+        makeSetNewPoseState(PoseState.L3),
+        say("makeRemoveEitherAlgae_EffectorGrab"),
+        makeRemoveEitherAlgae_EffectorGrab(),
+        Commands.waitSeconds(.8),
+        say("makeRemoveHighAlgae_Step5_Remove_ArmAngle"),
+        makeRemoveHighAlgae_Step5_Remove_ArmAngle(),
+        say("makeRemoveEitherAlgae_Deposit_ArmLength"),
+        makeRemoveEitherAlgae_Deposit_ArmLength(),
+        say("makeRemoveEitherAlgae_Deposit_ArmAngle"),
+        makeRemoveEitherAlgae_Deposit_ArmAngle(),
+        say("makeIntake_ZeroEncoder"),
+        makeIntake_ZeroEncoder(),
+        say("makeRemoveEitherAlgae_Deposit_EffectorRelease"),
+        makeRemoveEitherAlgae_Deposit_EffectorRelease(),
+        //Commands.waitSeconds(.5),
+        //say("makeL1Second_Step3_ArmAngle"),
+        //makeL1Second_Step3_ArmAngle(),
         say("--------------------")),
         makeSetNewPoseState(PoseState.L1)), say("Tried to do high algae, NOT in PoseState.L4"), ()->previousPoseState==PoseState.L4);   
 
@@ -264,7 +316,7 @@ public class RobotContainer {
         return effectorSubsystem.makeRotateTo(30);
     }
 
-    private final Command robotRemoveLowAlgae = new ConditionalCommand(
+    private final Command robotRemoveLowAlgaeAuto = new ConditionalCommand(
             makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle().andThen(
                     makeRemoveLowAlgae_Step2_PreRemove_EffectorAngle(),
                     makeRemoveLowAlgae_Step3_PreRemove_ArmLength(),
@@ -285,6 +337,28 @@ public class RobotContainer {
                     makeRemoveEitherAlgae_Deposit_EffectorRelease(),
                     Commands.waitSeconds(.5),
                     makeL1Second_Step3_ArmAngle(),
+                    makeSetNewPoseState(PoseState.L1)),
+            makeRobotNOP(), () -> previousPoseState == PoseState.L4);
+
+    private final Command robotRemoveLowAlgae = new ConditionalCommand(
+            makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle().andThen(
+                    makeRemoveLowAlgae_Step2_PreRemove_EffectorAngle(),
+                    makeRemoveLowAlgae_Step3_PreRemove_ArmLength(),
+                    makeSetNewPoseState(PoseState.L3),
+                    makeRemoveLowAlgae_Step4_PreRemove_ArmAngle(),
+                    makeRemoveEitherAlgae_EffectorGrab(),
+                    makeRemoveLowAlgae_Step5_Grab_ArmLength(),
+                    Commands.waitSeconds(.8),
+                    makeRemoveLowAlgae_Step6_PartialRemove_ArmLength(),
+                    makeRemoveLowAlgae_Step7_PartialRemove_ArmAngle(),
+                    makeRemoveLowAlgae_Step7_2_PreRemove_EffectorAngle(),
+                    makeRemoveLowAlgae_Step8_PartialRemove2_ArmLength(),
+                    makeRemoveLowAlgae_Step9_Remove_ArmAngle(),
+                    makeRemoveLowAlgae_Step10_PrepareDrop_EffectorAngle(),
+                    makeRemoveEitherAlgae_Deposit_ArmLength(),
+                    makeRemoveEitherAlgae_Deposit_ArmAngle(),
+                    makeIntake_ZeroEncoder(),
+                    makeRemoveEitherAlgae_Deposit_EffectorRelease(),
                     makeSetNewPoseState(PoseState.L1)),
             makeRobotNOP(), () -> previousPoseState == PoseState.L4);
 
@@ -475,8 +549,8 @@ public class RobotContainer {
             robotDrive.          setName("drive");
             robotIntake.         setName("intake");
             robotReleaseBrake.   setName("releaseBrake");
-            robotRemoveHighAlgae.setName("removeHighAlgae");
-            robotRemoveLowAlgae. setName("removeLowAlgae");
+            robotRemoveHighAlgaeAuto.setName("removeHighAlgae");
+            robotRemoveLowAlgaeAuto. setName("removeLowAlgae");
             robotToL1First.      setName("toL1");
             robotToL2.           setName("toL2");
             robotToL3.           setName("toL3");
@@ -490,8 +564,8 @@ public class RobotContainer {
             robotDrive,
             robotIntake,
             robotReleaseBrake,
-            robotRemoveHighAlgae,
-            robotRemoveLowAlgae,
+            robotRemoveHighAlgaeAuto,
+            robotRemoveLowAlgaeAuto,
             robotToL1First,
             robotToL2,
             robotToL3,
@@ -523,9 +597,11 @@ public class RobotContainer {
         initializeSubsystems();
         configureBindings();
 
-        m_chooser.setDefaultOption("RL4 LA SCORE", "RL4 LA SCORE");
+        m_chooser.setDefaultOption("!!RL4 LA SCORE!!", "RL4 LA SCORE");
+        m_chooser.setDefaultOption("RL4 LA ONLY", "RL4 plus low algae");
         m_chooser.addOption("Red side", "autoRed");
         m_chooser.addOption("Blue side", "autoBlue");
+        m_chooser.addOption("SCORE to STATION test", "Copy of RL4 LA SCORE");
         SmartDashboard.putData("Auto choices", m_chooser);
         
     }
@@ -585,6 +661,7 @@ public class RobotContainer {
         controllerOperator.b().onTrue(robotToL3);
         controllerOperator.a().onTrue(robotToL2);
         controllerOperator.rightBumper().onTrue(robotToL1First);
+        controllerOperator.rightTrigger().onTrue(robotEmergencyExtend);
         controllerOperator.rightStick().onTrue(robotToL1Second);
         controllerOperator.povUp().onTrue(robotRemoveHighAlgae);
         controllerOperator.povDown().onTrue(robotRemoveLowAlgae);
@@ -594,8 +671,6 @@ public class RobotContainer {
         controllerOperator.back().onTrue(robotToLift);
         controllerOperator.leftStick().onTrue(robotLift);
         controllerOperator.leftTrigger().onTrue(robotReIntake);
-
-        controllerDriver.povUp().onTrue(robotAutoKick);
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
