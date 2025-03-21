@@ -197,7 +197,7 @@ public class RobotContainer {
     }
 
     private Command makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle() {
-        return elevatorSubsystem.makeGoToAngleCmd(22);
+        return elevatorSubsystem.makeGoToAngleCmd(25);
     }
 
     private Command makeRemoveHighAlgae_Step5_Remove_ArmAngle() {
@@ -285,11 +285,11 @@ public class RobotContainer {
     }
 
     private Command makeRemoveLowAlgae_Step4_PreRemove_ArmAngle() {
-        return elevatorSubsystem.makeGoToAngleCmd(40);
+        return elevatorSubsystem.makeGoToAngleCmd(45);// 40 previously 
     } // 45
 
     private Command makeRemoveLowAlgae_Step5_Grab_ArmLength() {
-        return elevatorSubsystem.makeGoToPositionCmd(9);
+        return elevatorSubsystem.makeGoToPositionCmd(8);
     }
 
     private Command makeRemoveLowAlgae_Step6_PartialRemove_ArmLength() {
@@ -297,11 +297,11 @@ public class RobotContainer {
     }
 
     private Command makeRemoveLowAlgae_Step7_PartialRemove_ArmAngle() {
-        return elevatorSubsystem.makeSlowGoToAngleCmd(35);
+        return elevatorSubsystem.makeSlowGoToAngleCmd(35); // 35 degrees, 45 works
     }
 
     private Command makeRemoveLowAlgae_Step7_2_PreRemove_EffectorAngle() {
-        return effectorSubsystem.makeRotateTo(-70);
+        return effectorSubsystem.makeRotateTo(-70); // -70 previously
     }
 
     private Command makeRemoveLowAlgae_Step8_PartialRemove2_ArmLength() {
@@ -545,18 +545,18 @@ public class RobotContainer {
         }
 
         {
-            robotDepositCoral.   setName("depositCoral");
-            robotDrive.          setName("drive");
-            robotIntake.         setName("intake");
-            robotReleaseBrake.   setName("releaseBrake");
-            robotRemoveHighAlgaeAuto.setName("removeHighAlgae");
-            robotRemoveLowAlgaeAuto. setName("removeLowAlgae");
-            robotToL1First.      setName("toL1");
-            robotToL2.           setName("toL2");
-            robotToL3.           setName("toL3");
-            robotToL4.           setName("toL4");
-            robotToLift.         setName("toLift");
-            robotAutoKick.       setName("autoKick");
+            robotDepositCoral.          setName("depositCoral");
+            robotDrive.                 setName("drive");
+            robotIntake.                setName("intake");
+            robotReleaseBrake.          setName("releaseBrake");
+            robotRemoveHighAlgaeAuto.   setName("removeHighAlgae");
+            robotRemoveLowAlgaeAuto.    setName("removeLowAlgae");
+            robotToL1First.             setName("toL1");
+            robotToL2.                  setName("toL2");
+            robotToL3.                  setName("toL3");
+            robotToL4.                  setName("toL4");
+            robotToLift.                setName("toLift");
+            robotAutoKick.              setName("autoKick");
         }
 
         register(

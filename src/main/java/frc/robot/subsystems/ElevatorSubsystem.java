@@ -118,11 +118,11 @@ public class ElevatorSubsystem extends SubsystemBase{
         leftExtensionSparkMaxConfig.closedLoop
         .pidf(.9, 0, 0, .00001, ClosedLoopSlot.kSlot0)
         .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot1)
-        .outputRange(-.4, .5, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
+        .outputRange(-.3, .4, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
 
         leftExtensionSparkMax.configure(leftExtensionSparkMaxConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
-        // Configure right extension
+        // Configure right extension%
         SparkMaxConfig rightExtensionSparkMaxConfig = new SparkMaxConfig();
         rightExtensionSparkMaxConfig
             .idleMode(IdleMode.kBrake)
