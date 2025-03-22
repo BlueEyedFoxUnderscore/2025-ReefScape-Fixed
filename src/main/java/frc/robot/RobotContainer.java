@@ -597,11 +597,13 @@ public class RobotContainer {
         initializeSubsystems();
         configureBindings();
 
-        m_chooser.setDefaultOption("!!RL4 LA SCORE!!", "RL4 LA SCORE");
-        m_chooser.setDefaultOption("RL4 LA ONLY", "RL4 plus low algae");
-        m_chooser.addOption("Red side", "autoRed");
-        m_chooser.addOption("Blue side", "autoBlue");
-        m_chooser.addOption("SCORE to STATION test", "Copy of RL4 LA SCORE");
+        m_chooser.setDefaultOption("Mid (L4 A PROC STATION)", "Mid (L4 A PROC STATION)");
+        m_chooser.addOption("Mid (L1)", "Mid (L1)");
+        m_chooser.addOption("Mid (L4 A)", "Mid (L4 A)");
+        m_chooser.addOption("Red (L4 A PROC STATION)", "Blue (L4 A PROC STATION)");
+        m_chooser.addOption("Blue (L4 A PROC STATION)", "Blue (L4 A PROC STATION)");
+        m_chooser.addOption("SCORE to STATION test", "Copy of RL4 LA SCORE"); 
+        m_chooser.addOption("DO NOT USE", "$RL4 LA PROC STAT NEL4 SWRL4 SWA PROC STAT");
         SmartDashboard.putData("Auto choices", m_chooser);
         
     }
@@ -631,7 +633,8 @@ public class RobotContainer {
                         .withVelocityY(-controllerDriver.getLeftX() * Math.abs(controllerDriver.getLeftX()) * MaxSpeed
                                 * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 1.0)) // Drive left with
                                                                                                // negative X (left)
-                        .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate) // Drive counterclockwise
+                        .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate 
+                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 1.0)) // Drive counterclockwise
                                                                                             // with negative X (left)
                 ));
 
@@ -648,11 +651,16 @@ public class RobotContainer {
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        controllerDriver.back().and(controllerDriver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        controllerDriver.back().and(controllerDriver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        controllerDriver.start().and(controllerDriver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        controllerDriver.start().and(controllerDriver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        /*
+        //controllerDriver.back().and(controllerDriver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        //controllerDriver.back().and(controllerDriver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        //controllerDriver.start().and(controllerDriver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        //controllerDriver.start().and(controllerDriver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        */
         // reset the field-centric heading on left bumper press
+        controllerDriver.povDown().onTrue(elevatorSubsystem.makeTrimDownCmd());
+        controllerDriver.povUp().onTrue(elevatorSubsystem.makeTrimUpCmd());
+
         controllerDriver.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         controllerOperator.leftBumper().onTrue(robotIntake);

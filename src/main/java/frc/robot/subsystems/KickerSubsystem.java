@@ -42,7 +42,7 @@ public class KickerSubsystem extends SubsystemBase {
 
         
         sparkMaxConfig
-            .idleMode(IdleMode.kBrake)
+            .idleMode(IdleMode.kCoast)      
             .smartCurrentLimit(40)
             .inverted(false)
             .voltageCompensation(10.0);

@@ -54,6 +54,8 @@ public class ElevatorSubsystem extends SubsystemBase{
     private SparkClosedLoopController leftExtensionController = leftExtensionSparkMax.getClosedLoopController();
     private RelativeEncoder leftExtensionEncoder = leftExtensionSparkMax.getEncoder();
 
+    private double trim = 0;
+
     public void init() {
 
         followerTiltConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -118,7 +120,7 @@ public class ElevatorSubsystem extends SubsystemBase{
         leftExtensionSparkMaxConfig.closedLoop
         .pidf(.9, 0, 0, .00001, ClosedLoopSlot.kSlot0)
         .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot1)
-        .outputRange(-.3, .4, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
+        .outputRange(-.4, .5, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
 
         leftExtensionSparkMax.configure(leftExtensionSparkMaxConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
@@ -149,6 +151,8 @@ public class ElevatorSubsystem extends SubsystemBase{
         leftExtensionController.setReference(0, ControlType.kPosition, ClosedLoopSlot.kSlot0);
     }
 
+    double previousArmAngle = 0;
+
     public Command makeGoToAngleCmd(double angle){
         if (angle<minAllowedAngle || angle > maxAllowedAngle) {
             System.out.println("ASSERTION FAILED: Requested command would set elevator angle out of bounds to " + angle);
@@ -160,7 +164,8 @@ public class ElevatorSubsystem extends SubsystemBase{
         }
         return new FunctionalCommand (
             () -> {
-                leaderTilt.setControl(requestMotionMagicVoltage.withPosition((angle/360.0)-.25)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
+                previousArmAngle = (angle/360.0) - .25;
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(previousArmAngle + trim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
                 System.out.println("Elevator angle set to " + angle);
             },
             () -> {}, //onExecute
@@ -184,7 +189,8 @@ public class ElevatorSubsystem extends SubsystemBase{
         }
         return new FunctionalCommand (
             () -> {
-                leaderTilt.setControl(requestMotionMagicVoltage.withPosition((angle/360.0)-.25).withSlot(1)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
+                previousArmAngle = (angle/360.0) - .25;
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(previousArmAngle + trim).withSlot(1)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
                 System.out.println("Elevator angle set to " + angle);
             },
             () -> {}, //onExecute
@@ -230,5 +236,33 @@ public class ElevatorSubsystem extends SubsystemBase{
                 return arrived; 
             },
             this);
+    }
+
+    public Command makeTrimUpCmd() {
+        return this.runOnce(
+            () -> {
+                if (!(leaderTilt.getPosition().getValueAsDouble() + .25 >= 0)) {
+                    trim += 0.25/360.0;
+                }
+                else {
+                    trim -= 0.25/360.0;
+                }
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(previousArmAngle + trim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotationc
+            }
+        );
+    }
+
+    public Command makeTrimDownCmd() {
+        return this.runOnce(
+            () -> {
+                if (!(leaderTilt.getPosition().getValueAsDouble() + .25 >= 0)) {
+                    trim -= 0.25/360.0;
+                }
+                else {
+                    trim += 0.25/360.0;
+                }
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(previousArmAngle + trim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotationc
+            }
+        );
     }
 }
