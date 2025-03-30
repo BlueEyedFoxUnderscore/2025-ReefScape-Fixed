@@ -97,7 +97,7 @@ public class EffectorSubsystem extends SubsystemBase {
         });
     }
 
-    public Command makeRotateTo(double position)
+    public Command makeLook(double position)
     {  
         if (position > (130) || position < (-130)) {
             System.out.println("ASSERTION FAILURE: position for elevator pivot requested outside of allowed range!");
@@ -111,7 +111,7 @@ public class EffectorSubsystem extends SubsystemBase {
         );
     }
 
-    public Command makeSetSpeed(double ipsleft, double ipsright)
+    public Command makeEat(double ipsleft, double ipsright)
     {
         return this.runOnce(() -> {
                 rightIntakeSparkClosedLoopController.setReference(ipsright, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
