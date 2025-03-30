@@ -595,6 +595,7 @@ public class RobotContainer {
         effectorSubsystem.init();
         kickerSubsystem.init();
         armReachSubsystem.init();
+        armTiltSubsystem.init();
     }
 
     private void configureBindings() {

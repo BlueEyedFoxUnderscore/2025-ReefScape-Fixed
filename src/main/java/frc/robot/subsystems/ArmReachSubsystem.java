@@ -101,21 +101,27 @@ public class ArmReachSubsystem extends SubsystemBase{
     public Command makeReach(double position){
         if (position<minAllowedPosition || position > maxAllowedPosition) {
             System.out.println("ARM REACH REQUEST OF " + position + " IS OUT OF BOUNDS");
-        }
-        return new FunctionalCommand (
-            () -> {
-                leftReachController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
-            }, // onInit
-            () -> {}, //onExecute
-            (Boolean wasCanceled) -> {}, //onEnd
-            () -> {
-                Boolean arrived = (Math.abs(((leftReachSparkMax.getEncoder().getPosition())-position))<.25);
-                if (!arrived && isStopped()) {
-                    System.out.println("ARM REACH JAMMED AT " + getReach() + " WHILE TRAVELING TO " + position);   
+            return this.runOnce(
+                () -> {
+                    System.out.println("BAD ARM REACH COMMAND EXECUTED");
                 }
-                return arrived; 
-            },
-            this);
+            );
+        }
+        else {
+            return new FunctionalCommand (
+                () -> {
+                    leftReachController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+                }, // onInit
+                () -> {}, //onExecute
+                (Boolean wasCanceled) -> {}, //onEnd
+                () -> {
+                    Boolean arrived = (Math.abs(((leftReachSparkMax.getEncoder().getPosition())-position))<.25);
+                    if (!arrived && isStopped()) {
+                        System.out.println("ARM REACH JAMMED AT " + getReach() + " WHILE TRAVELING TO " + position);   
+                    }
+                    return arrived; 
+                },
+                this);
+        }
     }
-
 }

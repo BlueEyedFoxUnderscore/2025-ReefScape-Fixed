@@ -97,16 +97,20 @@ public class EffectorSubsystem extends SubsystemBase {
         });
     }
 
-    public Command makeLook(double position)
+    public Command makeLook(double look)
     {  
-        if (position > (130) || position < (-130)) {
-            System.out.println("ASSERTION FAILURE: position for elevator pivot requested outside of allowed range!");
-            return this.runOnce(() -> System.out.println("ASSERTION FAILURE: This pivot command has a position outside of the allowed range!"));
+        if (look > (130) || look < (-130)) {
+            System.out.println("EFFECTOR LOOK REQUEST OF " + look + " IS OUT OF BOUNDS");
+            return this.runOnce(
+                () -> {
+                    System.out.println("BAD EFFECOTOR LOOK COMMAND EXECUTED");
+                }
+            );
         }
         else return this.runOnce(() -> 
             {
-                pivotSparkMaxClosedLoopController.setReference(180+position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
-                System.out.println("Effector angle set to " + position);
+                pivotSparkMaxClosedLoopController.setReference(180+look, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+                System.out.println("Effector angle set to " + look);
             }
         );
     }

@@ -111,10 +111,10 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
     public Command makeTilt(double angle){
         if (angle<minAllowedAngle || angle > maxAllowedAngle) {
-            System.out.println("ASSERTION FAILED: Requested command would set arm angle out of bounds to " + angle);
+            System.out.println("ARM TILT REQUEST OF " + angle + " IS OUT OF BOUNDS");
             return this.runOnce(
                 () -> {
-                    System.out.println("This command sets the arm angle out of bounds to " + angle);
+                    System.out.println("BAD ARM TILT COMMAND EXECUTED");
                 }
             );
         }
