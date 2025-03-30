@@ -1,18 +1,5 @@
 package frc.robot.subsystems;
 
-
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.CoastOut;
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.CANdi;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
-import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -39,8 +26,6 @@ public class ArmReachSubsystem extends SubsystemBase{
     private SparkMax rightReachSparkMax = new SparkMax(32, MotorType.kBrushless);
     private SparkClosedLoopController leftReachController = leftReachSparkMax.getClosedLoopController();
     private RelativeEncoder leftReachEncoder = leftReachSparkMax.getEncoder();
-
-    private double trim = 0;
 
     public void init() {
 
@@ -93,10 +78,26 @@ public class ArmReachSubsystem extends SubsystemBase{
         return leftReachEncoder.getPosition();
     }
 
+    @Override
+    public void periodic() {
+        isStopped();
+    }
+
+    static final int safeAfter=200/20; // After 200 ms, each cycle 20 ms
+    static int safeCountsRemaining=safeAfter;
     public boolean isStopped()
     {
-        return (Math.abs(leftReachEncoder.getVelocity())<0.1);
+        boolean possiblySafe = Math.abs(leftReachEncoder.getVelocity())<0.1;
+        safeCountsRemaining = possiblySafe ? (safeCountsRemaining>0 ? safeCountsRemaining-1 : 0) : safeAfter;
+        return safeCountsRemaining==0;
     }
+
+    private void setUnsafe()
+    {
+        safeCountsRemaining=safeAfter;
+    }
+
+    private boolean sentJamMessage = false;
 
     public Command makeReach(double position){
         if (position<minAllowedPosition || position > maxAllowedPosition) {
@@ -110,14 +111,17 @@ public class ArmReachSubsystem extends SubsystemBase{
         else {
             return new FunctionalCommand (
                 () -> {
+                    sentJamMessage=false;
+                    setUnsafe();
                     leftReachController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
                 }, // onInit
                 () -> {}, //onExecute
                 (Boolean wasCanceled) -> {}, //onEnd
                 () -> {
                     Boolean arrived = (Math.abs(((leftReachSparkMax.getEncoder().getPosition())-position))<.25);
-                    if (!arrived && isStopped()) {
+                    if (!arrived && isStopped() && !sentJamMessage) {
                         System.out.println("ARM REACH JAMMED AT " + getReach() + " WHILE TRAVELING TO " + position);   
+                        sentJamMessage=true;
                     }
                     return arrived; 
                 },

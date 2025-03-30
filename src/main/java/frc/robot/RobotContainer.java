@@ -27,8 +27,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-
-import frc.robot.subsystems.EffectorSubsystem;
+import frc.robot.subsystems.EffectorEatSubsystem;
+import frc.robot.subsystems.EffectorLookSubsystem;
 import frc.robot.subsystems.ArmReachSubsystem;
 import frc.robot.subsystems.ArmTiltSubsystem;
 import frc.robot.subsystems.KickerSubsystem;
@@ -41,7 +41,8 @@ public class RobotContainer {
 
     private static PoseState previousPoseState = PoseState.SAFE;
 
-    private EffectorSubsystem effectorSubsystem = new EffectorSubsystem();
+    private EffectorLookSubsystem effectorSubsystem = new EffectorLookSubsystem();
+    private EffectorEatSubsystem effectorEatSubsystem = new EffectorEatSubsystem();
     private KickerSubsystem kickerSubsystem = new KickerSubsystem();
     private ArmReachSubsystem armReachSubsystem = new ArmReachSubsystem();
     private ArmTiltSubsystem armTiltSubsystem = new ArmTiltSubsystem();
@@ -62,15 +63,15 @@ public class RobotContainer {
     }
 
     private Command makeEffectorDepositCoral() {
-        return effectorSubsystem.makeZeroEncoder().andThen(
-                effectorSubsystem.makeMoveTo(20.0));
+        return effectorEatSubsystem.makeZeroEncoder().andThen(
+                effectorEatSubsystem.makeEatTo(20.0));
     }
 
     private Command makeEffectorSidewaysDepositCoral() {
-        return effectorSubsystem.makeZeroEncoder().andThen(
-                effectorSubsystem.makeEat(15, 25),
+        return effectorEatSubsystem.makeZeroEncoder().andThen(
+                effectorEatSubsystem.makeEatAt(15, 25),
                 Commands.waitSeconds(2),
-                effectorSubsystem.makeEat(0.0, 0.0));
+                effectorEatSubsystem.makeEatAt(0.0, 0.0));
     }
 
     private Command makeEmergencyExtend() {
@@ -86,7 +87,7 @@ public class RobotContainer {
                     makeL3_Step3_Preposition_ArmLength().schedule();
                     break;
                 case L4:
-                    makeL4_Step4_Preposition_ArmLength().schedule();
+                    makeL4_reach().schedule();
                     break;
                 default:break;
             }
@@ -95,60 +96,42 @@ public class RobotContainer {
 
     private final Command robotEmergencyExtend = makeEmergencyExtend();
 
-    private Command makeSafe_Step1_ArmLength() {
-        return armReachSubsystem.makeReach(0);
-    }
-
-    private Command makeSafe_Step2_ArmAngle() {
-        return armTiltSubsystem.makeTilt(0);
-    }
-
-    private Command makeSafe_Step3_EffectorAngle() {
-        return effectorSubsystem.makeLook(+0.0);
-    }
-
     private Command makeRobotSafe() {
-        return makeL4_Step3_Preposition_ArmAngle().andThen(
-                makeSafe_Step1_ArmLength(),
-                makeSafe_Step2_ArmAngle(),
-                makeSafe_Step3_EffectorAngle(),
-                makeSetNewPoseState(PoseState.SAFE));
+        return armTiltSubsystem.makeSafe();
     };
 
     private Command makeIntake_CenterCoral() {
-        return effectorSubsystem.makeMoveTo(6.0);
+        return effectorEatSubsystem.makeEatTo(6.0);
     }
 
     private Command makeIntake_ZeroEncoder() {
-        return effectorSubsystem.makeZeroEncoder();
+        return effectorEatSubsystem.makeZeroEncoder();
     }
 
     private Command makeIntake_WaitUntilCoralPresent() {
-        return effectorSubsystem.makeWaitUntilCoralPresent();
+        return effectorEatSubsystem.makeWaitUntilCoralPresent();
     }
 
     private Command makeIntake_WaitUntilCoralMissing() {
-        return effectorSubsystem.makeWaitUntilCoralMissing();
+        return effectorEatSubsystem.makeWaitUntilCoralMissing();
     }
 
-    private final Command stopIntake = effectorSubsystem.makeEat(0.0, 0.0);
+    private final Command stopIntake = effectorEatSubsystem.makeEatAt(0.0, 0.0);
 
     private final Command robotIntake =
             makeRobotSafe().andThen(
             effectorSubsystem.makeLook(+53.0),
+            armReachSubsystem.makeReach(1.0).alongWith(armTiltSubsystem.makeTilt(-13.5), effectorEatSubsystem.makeEatAt(60.5, 60.5)),
             makeSetNewPoseState(PoseState.INTAKE),
-            armReachSubsystem.makeReach(1.0),
-            armTiltSubsystem.makeTilt(-13.5),
-            effectorSubsystem.makeEat(60.5, 60.5),
             makeIntake_WaitUntilCoralPresent(),
-            effectorSubsystem.makeEat(-10.0, -10.0),
+            effectorEatSubsystem.makeEatAt(-10.0, -10.0),
             makeIntake_WaitUntilCoralMissing(),
             makeIntake_ZeroEncoder(),
             makeIntake_CenterCoral())
             .finallyDo((interrupted) -> {if (interrupted) stopIntake.schedule();});
 
     private final Command robotReIntake =
-            effectorSubsystem.makeEat(-10.0, -10.0).andThen(
+            effectorEatSubsystem.makeEatAt(-10.0, -10.0).andThen(
             makeIntake_WaitUntilCoralMissing(),
             makeIntake_ZeroEncoder(),
             makeIntake_CenterCoral());
@@ -182,7 +165,6 @@ public class RobotContainer {
     }
 
     private final Command robotRemoveHighAlgaeAuto = new ConditionalCommand(
-        say("REMOVING HIGH ALGAE").andThen(
         say("makeRemoveHighAlgae_Step1_PreRemove_ArmAngle").andThen(
         makeRemoveHighAlgae_Step1_PreRemove_ArmAngle(),
         say("makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle"),
@@ -208,11 +190,10 @@ public class RobotContainer {
         Commands.waitSeconds(.5),
         say("makeL1Second_Step3_ArmAngle"),
         makeL1Second_Step3_ArmAngle(),
-        say("--------------------")),
+        say("--------------------"),
         makeSetNewPoseState(PoseState.L1)), say("Tried to do high algae, NOT in PoseState.L4"), ()->previousPoseState==PoseState.L4);   
     
     private final Command robotRemoveHighAlgae = new ConditionalCommand(
-        say("REMOVING HIGH ALGAE").andThen(
         say("makeRemoveHighAlgae_Step1_PreRemove_ArmAngle").andThen(
         makeRemoveHighAlgae_Step1_PreRemove_ArmAngle(),
         say("makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle"),
@@ -238,15 +219,15 @@ public class RobotContainer {
         //Commands.waitSeconds(.5),
         //say("makeL1Second_Step3_ArmAngle"),
         //makeL1Second_Step3_ArmAngle(),
-        say("--------------------")),
+        say("--------------------"),
         makeSetNewPoseState(PoseState.L1)), say("Tried to do high algae, NOT in PoseState.L4"), ()->previousPoseState==PoseState.L4);   
 
     private Command makeRemoveEitherAlgae_EffectorGrab() {
-        return effectorSubsystem.makeEat(-50, -50);
+        return effectorEatSubsystem.makeEatAt(-50, -50);
     } // Top speed = 60.5
 
     private Command makeRemoveEitherAlgae_Deposit_EffectorRelease() {
-        return effectorSubsystem.makeMoveTo(3.0);
+        return effectorEatSubsystem.makeEatTo(3.0);
     }
 
     private Command makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle() {
@@ -339,29 +320,18 @@ public class RobotContainer {
                     makeSetNewPoseState(PoseState.L1)),
             makeRobotNOP(), () -> previousPoseState == PoseState.L4);
 
-    private final Command makeL4_Step1_Preposition_EffectorAngle()              { return effectorSubsystem.makeLook(0.0);} 
-    private final Command makeL4_Step2_Preposition_Coral()                      { return effectorSubsystem.makeMoveTo(3.0);} 
-    private final Command makeL4_Step3_Preposition_ArmAngle()                   { return armTiltSubsystem.makeTilt(12);}
-    private final Command makeL4_Step4_Preposition_ArmLength()                  { return armReachSubsystem.makeReach(46.5);}
-    private final Command makeL4_Step5_Position_EffectorAngle()                 { return effectorSubsystem.makeLook(+40.0);} 
-    private final Command makeL4_Step6_Position_ArmAngle()                      { return armTiltSubsystem.makeTilt(17);}
+    private final Command makeL4_reach()                  { return armReachSubsystem.makeReach(46.5);}
     private final Command robotToL4 =
         say("ROBOT TO L4").andThen(
         makeRobotSafe(),
-        say("makeL4_Step1_Preposition_EffectorAngle"),
-        makeL4_Step1_Preposition_EffectorAngle(),
-        say("makeL4_Step2_Preposition_Coral"),
-        makeL4_Step2_Preposition_Coral(),
-        say("makeL4_Step3_Preposition_ArmAngle"),
-        makeL4_Step3_Preposition_ArmAngle(),
-        say("makeL4_Step4_Preposition_ArmLength"),
-        makeL4_Step4_Preposition_ArmLength(),
-        say("makeSetNewPoseState(PoseState.L4)"),
+        effectorSubsystem.makeLook(0.0).andThen(
+        effectorEatSubsystem.makeEatTo(3.0),
+        effectorSubsystem.makeLook(+40.0))
+            .alongWith(
+                armTiltSubsystem.makeTilt(12),
+                makeL4_reach()),
+        armTiltSubsystem.makeTilt(17),
         makeSetNewPoseState(PoseState.L4),
-        say("makeL4_Step5_Position_EffectorAngle"),
-        makeL4_Step5_Position_EffectorAngle(),
-        say("makeL4_Step6_Position_ArmAngle()"),
-        makeL4_Step6_Position_ArmAngle(),
         say("----------------------------------"));
 
     private final Command makeL3_Step1_Preposition_EffectorAngle() {
@@ -483,7 +453,10 @@ public class RobotContainer {
 
     private final Command robotReleaseBrake = armTiltSubsystem.makeReleaseBrakeCmd();
 
-    private final Command robotDrive = makeRobotSafe();
+    private final Command robotDrive = 
+        makeRobotSafe().andThen(
+            armTiltSubsystem.makeTilt(0).alongWith(armReachSubsystem.makeReach(0), effectorSubsystem.makeLook(0))
+        );
 
     private final Command robotDepositCoral = new ConditionalCommand(makeEffectorDepositCoral(),
             say("sideways").andThen(makeEffectorSidewaysDepositCoral()), () -> {
@@ -593,6 +566,7 @@ public class RobotContainer {
 
     private void initializeSubsystems() {
         effectorSubsystem.init();
+        effectorEatSubsystem.init();
         kickerSubsystem.init();
         armReachSubsystem.init();
         armTiltSubsystem.init();

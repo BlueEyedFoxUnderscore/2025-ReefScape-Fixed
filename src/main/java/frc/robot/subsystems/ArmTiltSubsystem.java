@@ -34,8 +34,10 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
     private static final double minAllowedAngle = -20.0; 
     private static final double maxAllowedAngle = 75.0;
+    public static final double forwardSafeAngle = 15.0;
 
-    private double angleTrim = 0;
+    private static final double maxAngleError = 1.0;
+    private double rotationsTrim = 0;
 
     public void init() {
 
@@ -90,24 +92,40 @@ public class ArmTiltSubsystem extends SubsystemBase{
         SmartDashboard.putData("Arm Tilt", new Sendable() {
             @Override
             public void initSendable(SendableBuilder builder) {
-                builder.addDoubleProperty("Arm angle", () -> getAngle(), null);
+                builder.addDoubleProperty("Arm Tilt", () -> getAngle(), null);
+                builder.addDoubleProperty("Rotor Position", () -> {return leaderTilt.getRotorPosition().getValueAsDouble();}, null);
             }
         });
     }
 
     public double getAngle()
     {
-        return leaderTilt.getPosition().getValueAsDouble()*360;
+        return (leaderTilt.getPosition().getValueAsDouble()+.25)*360;
+    }
+
+    static final int safeAfter=200/20; // After 200 ms, each cycle 20 ms
+    static int safeCountsRemaining=safeAfter;
+ 
+    @Override
+    public void periodic() {
+        isStopped();
     }
 
     public boolean isStopped()
     {
-        return (leaderTilt.getVelocity().getValueAsDouble()*360)<2.0;
+        boolean possiblySafe = (leaderTilt.getVelocity().getValueAsDouble()*360)<2.0;
+        safeCountsRemaining = possiblySafe ? (safeCountsRemaining>0 ? safeCountsRemaining-1 : 0) : safeAfter;
+        return safeCountsRemaining==0;
+    }
+
+    private void setUnsafe()
+    {
+        safeCountsRemaining=safeAfter;
     }
 
 
 
-    double currentArmAngle = 0;
+    double currentArmRotations = 0;
 
     public Command makeTilt(double angle){
         if (angle<minAllowedAngle || angle > maxAllowedAngle) {
@@ -120,14 +138,17 @@ public class ArmTiltSubsystem extends SubsystemBase{
         }
         return new FunctionalCommand (
             () -> {
-                currentArmAngle = (angle/360.0) - .25;
-                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmAngle + angleTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
-                System.out.println("Arm angle set to " + angle);
+                setUnsafe();
+                currentArmRotations = (angle/360.0) - .25;
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmRotations + rotationsTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
             },
             () -> {}, //onExecute
             (Boolean wasCanceled) -> {}, //onEnd
             () -> {
-                Boolean arrived = (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25)))<(5.0/360.0);
+                Boolean arrived = (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25)))<(maxAngleError/360.0);
+                if (!arrived && isStopped()) {
+                    System.out.println("ARM TILT JAMMED AT " + getAngle() + " WHILE TRAVELING TO " + angle);   
+                }
                 return arrived; 
             },
             this);
@@ -144,15 +165,16 @@ public class ArmTiltSubsystem extends SubsystemBase{
         }
         return new FunctionalCommand (
             () -> {
-                currentArmAngle = (angle/360.0) - .25;
-                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmAngle + angleTrim).withSlot(1)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
+                setUnsafe();
+                currentArmRotations = (angle/360.0) - .25;
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmRotations + rotationsTrim).withSlot(1)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
             },
             () -> {}, //onExecute
             (Boolean wasCanceled) -> {}, //onEnd
             () -> {
-                Boolean arrived = (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25)))<(5.0/360.0);
+                Boolean arrived = (Math.abs(leaderTilt.getPosition().getValueAsDouble()-((angle/360.0)-.25)))<(maxAngleError/360.0);
                 if (!arrived && isStopped()) {
-                    System.out.println("ARM ANGLE JAMMED AT " + getAngle() + " WHILE TRAVELING TO " + currentArmAngle);   
+                    System.out.println("ARM ANGLE JAMMED AT " + getAngle() + " WHILE TRAVELING TO " + angle);   
                 }
                 return arrived; 
             },
@@ -178,12 +200,12 @@ public class ArmTiltSubsystem extends SubsystemBase{
         return this.runOnce(
             () -> {
                 if (!(leaderTilt.getPosition().getValueAsDouble() + .25 >= 0)) {
-                    angleTrim += 0.25/360.0;
+                    rotationsTrim += 0.25/360.0;
                 }
                 else {
-                    angleTrim -= 0.25/360.0;
+                    rotationsTrim -= 0.25/360.0;
                 }
-                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmAngle + angleTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotationc
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmRotations + rotationsTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotationc
             }
         );
     }
@@ -192,13 +214,36 @@ public class ArmTiltSubsystem extends SubsystemBase{
         return this.runOnce(
             () -> {
                 if (!(leaderTilt.getPosition().getValueAsDouble() + .25 >= 0)) {
-                    angleTrim -= 0.25/360.0;
+                    rotationsTrim -= 0.25/360.0;
                 }
                 else {
-                    angleTrim += 0.25/360.0;
+                    rotationsTrim += 0.25/360.0;
                 }
-                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmAngle + angleTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotationc
+                leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmRotations + rotationsTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotationc
             }
         );
+    }
+
+    private boolean sentJamMessage = false;
+    public Command makeSafe() {
+        return new FunctionalCommand (
+            () -> {
+                sentJamMessage=false;
+                if(!isStopped()||getAngle()>(forwardSafeAngle+maxAngleError)) {
+                    currentArmRotations = (Math.min(forwardSafeAngle,getAngle())/360.0) - .25;
+                    leaderTilt.setControl(requestMotionMagicVoltage.withPosition(currentArmRotations + rotationsTrim)); // Position is set in rotations, not angle, and has an offset of 1/4 rotation
+                }
+            },
+            () -> {}, //onExecute
+            (Boolean wasCanceled) -> {}, //onEnd
+            () -> {
+                Boolean arrived = isStopped()&&getAngle()<=(forwardSafeAngle+maxAngleError);
+                if (!arrived && isStopped() && !sentJamMessage) {
+                    System.out.println("ARM ANGLE JAMMED WHILE TRYING TO MAKE SAFE");   
+                    sentJamMessage=true;
+                }
+                return arrived; 
+            },
+            this);
     }
 }
