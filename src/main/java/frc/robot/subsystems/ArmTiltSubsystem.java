@@ -34,7 +34,7 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
     private static final double minAllowedAngle = -20.0; 
     private static final double maxAllowedAngle = 75.0;
-    public static final double forwardSafeAngle = 15.0;
+    public static final double forwardSafeAngle = 5.0;
 
     private static final double maxAngleError = 1.0;
     private double rotationsTrim = 0;

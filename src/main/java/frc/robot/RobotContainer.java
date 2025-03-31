@@ -18,6 +18,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,11 +36,13 @@ import frc.robot.subsystems.KickerSubsystem;
 
 public class RobotContainer {
 
+    private final PWM pwm0 = new PWM(0);
+
     private enum PoseState {
-        SAFE, INTAKE, L1, L2, L3, L4, LIFT
+        L1, L2, L3, L4, LIFT, NONE
     };
 
-    private static PoseState previousPoseState = PoseState.SAFE;
+    private static PoseState previousPoseState = PoseState.NONE;
 
     private EffectorLookSubsystem effectorSubsystem = new EffectorLookSubsystem();
     private EffectorEatSubsystem effectorEatSubsystem = new EffectorEatSubsystem();
@@ -97,7 +100,7 @@ public class RobotContainer {
     private final Command robotEmergencyExtend = makeEmergencyExtend();
 
     private Command makeRobotSafe() {
-        return armTiltSubsystem.makeSafe();
+        return makeSetNewPoseState(PoseState.NONE).andThen(armTiltSubsystem.makeSafe());
     };
 
     private Command makeIntake_CenterCoral() {
@@ -122,7 +125,6 @@ public class RobotContainer {
             makeRobotSafe().andThen(
             effectorSubsystem.makeLook(+53.0),
             armReachSubsystem.makeReach(1.0).alongWith(armTiltSubsystem.makeTilt(-13.5), effectorEatSubsystem.makeEatAt(60.5, 60.5)),
-            makeSetNewPoseState(PoseState.INTAKE),
             makeIntake_WaitUntilCoralPresent(),
             effectorEatSubsystem.makeEatAt(-10.0, -10.0),
             makeIntake_WaitUntilCoralMissing(),
@@ -334,87 +336,67 @@ public class RobotContainer {
         makeSetNewPoseState(PoseState.L4),
         say("----------------------------------"));
 
-    private final Command makeL3_Step1_Preposition_EffectorAngle() {
-        return effectorSubsystem.makeLook(+8.0);
-    }
-
-    private final Command makeL3_Step2_Preposition_ArmAngle() {
-        return armTiltSubsystem.makeTilt(19);
-    }
 
     private final Command makeL3_Step3_Preposition_ArmLength() {
         return armReachSubsystem.makeReach(23);
     }
 
-    private final Command makeL3_Step4_Position_ArmAngle() {
-        return armTiltSubsystem.makeTilt(23);
-    }
-
-    private final Command robotToL3 = makeRobotSafe().andThen(
-            makeL3_Step1_Preposition_EffectorAngle(),
-            makeL3_Step2_Preposition_ArmAngle(),
-            makeL3_Step3_Preposition_ArmLength(),
-            makeSetNewPoseState(PoseState.L3),
-            makeL3_Step4_Position_ArmAngle());
-
-    private final Command makeL2_Step1_Preposition_EffectorAngle() {
-        return effectorSubsystem.makeLook(0);
-    }
-
-    private final Command makeL2_Step2_Preposition_ArmAngle() {
-        return armTiltSubsystem.makeTilt(30);
-    }
-
-    private final Command makeL2_Step4_Position_ArmAngle() {
-        return armTiltSubsystem.makeTilt(35);
-    }
-
+    private final Command robotToL3 =
+        say("ROBOT TO L3").andThen(
+        makeRobotSafe(),
+        effectorSubsystem.makeLook(+8.0).alongWith(
+            armTiltSubsystem.makeTilt(12),
+            armReachSubsystem.makeReach(23)
+        ),
+        armTiltSubsystem.makeTilt(23),
+        makeSetNewPoseState(PoseState.L3),
+        say("----------------------------------"));
+    
     private final Command makeL2_Step3_Preposition_ArmLength() {
         return armReachSubsystem.makeReach(9.75);
     }
 
-    private final Command robotToL2 = makeRobotSafe().andThen(
-            makeL2_Step1_Preposition_EffectorAngle(),
-            makeL2_Step2_Preposition_ArmAngle(),
-            makeL2_Step3_Preposition_ArmLength(),
-            makeSetNewPoseState(PoseState.L2),
-            makeL2_Step4_Position_ArmAngle());
+    private final Command robotToL2 =
+    say("ROBOT TO L2").andThen(
+    makeRobotSafe(),
+    effectorSubsystem.makeLook(+0.0).alongWith(
+        armTiltSubsystem.makeTilt(12),
+        armReachSubsystem.makeReach(9.75)
+    ),
+    armTiltSubsystem.makeTilt(35),
+    makeSetNewPoseState(PoseState.L2),
+    say("----------------------------------"));
 
-    private final Command makeL1Second_Step1_EffectorAngle() {
-        return effectorSubsystem.makeLook(-59);
-    }
+    private final Command robotToL1First =
+    say("ROBOT TO FIRST L1").andThen(
+    makeRobotSafe(),
+    effectorSubsystem.makeLook(-55).alongWith(
+        armTiltSubsystem.makeTilt(12),
+        armReachSubsystem.makeReach(0)
+    ),
+    armTiltSubsystem.makeTilt(57),
+    makeSetNewPoseState(PoseState.L1),
+    say("----------------------------------"));
 
-    private final Command makeL1Second_Step2_ArmLength() {
-        return armReachSubsystem.makeReach(1.8);
-    }
+    private final Command robotToL1Second =
+    say("ROBOT TO FIRST L1").andThen(
+    makeRobotSafe(),
+    effectorSubsystem.makeLook(-59).alongWith(
+        armTiltSubsystem.makeTilt(12),
+        armReachSubsystem.makeReach(1.8)
+    ),
+    armTiltSubsystem.makeTilt(47),
+    makeSetNewPoseState(PoseState.L1),
+    say("----------------------------------"));
+
 
     private final Command makeL1Second_Step3_ArmAngle() {
         return armTiltSubsystem.makeTilt(47);
     }
 
-    private final Command robotToL1Second = makeRobotSafe().andThen(
-            makeL1Second_Step1_EffectorAngle(),
-            makeL1Second_Step2_ArmLength(),
-            makeL1Second_Step3_ArmAngle(),
-            makeSetNewPoseState(PoseState.L1));
-
-    private final Command makeL1First_Step1_EffectorAngle() {
-        return effectorSubsystem.makeLook(-55);
-    } // 59 lvl 2
-
     private final Command makeL1First_Step2_ArmLength() {
         return armReachSubsystem.makeReach(0);
     }
-
-    private final Command makeL1First_Step3_ArmAngle() {
-        return armTiltSubsystem.makeTilt(57);
-    }
-
-    private final Command robotToL1First = makeRobotSafe().andThen(
-            makeL1First_Step1_EffectorAngle(),
-            makeL1First_Step2_ArmLength(),
-            makeL1First_Step3_ArmAngle(),
-            makeSetNewPoseState(PoseState.L1));
 
     private final Command makeLiftPosition_Step1_EffectorAngle() {
         return effectorSubsystem.makeLook(90);
@@ -565,6 +547,7 @@ public class RobotContainer {
 
 
     private void initializeSubsystems() {
+        pwm0.setAlwaysHighMode();
         effectorSubsystem.init();
         effectorEatSubsystem.init();
         kickerSubsystem.init();
