@@ -34,9 +34,9 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
     private static final double minAllowedAngle = -20.0; 
     private static final double maxAllowedAngle = 75.0;
-    public static final double forwardSafeAngle = 5.0;
+    public static final double forwardSafeAngle = 15.0;
 
-    private static final double maxAngleError = 1.0;
+    private static final double maxAngleError = 0.5;
     private double rotationsTrim = 0;
 
     public void init() {
@@ -85,7 +85,11 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
         followerTilt.getConfigurator().apply(followerTiltConfig);
         leaderTilt.getConfigurator().apply(leaderTiltConfig);
-        leaderTilt.setPosition(-.25, 1); // When vertical, we are actually at -.25
+        double rotorPosition = leaderTilt.getRotorPosition().getValueAsDouble();
+        rotorPosition = rotorPosition - Math.round(rotorPosition);;
+        System.out.println("\n\n****\nrotorRotations: "+rotorPosition);
+        System.out.println("calcedRotationsOffset: "+(rotorPosition/( 4.*3.*3.*(80./12.))));
+        leaderTilt.setPosition(-.25+(rotorPosition/( 4.*3.*3.*(80./12.))), 1); // When vertical, we are actually at -.25
         followerTilt.setControl(followLeaderTiltRequest);
         leaderTilt.setControl(requestMotionMagicVoltage.withPosition(-0.25));
 

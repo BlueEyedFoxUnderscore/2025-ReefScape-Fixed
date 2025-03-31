@@ -106,4 +106,13 @@ public class EffectorEatSubsystem extends SubsystemBase {
             System.out.println("Effector encoders zeroed");
         });
     }
+
+    public Command makeZeroForIntake() {
+        return this.runOnce(() -> {
+            rightIntakeEncoder.setPosition(2.5);
+            leftIntakeEncoder.setPosition(2.5);
+            System.out.println("Effector encoders zeroed");
+        });
+    }
+
 } 
