@@ -132,39 +132,21 @@ public class RobotContainer {
         return armTiltSubsystem.makeTilt(18);
     }
 
-    private Command makeRemoveHighAlgae_Step1_PreRemove_ArmAngle() {
-        return armTiltSubsystem.makeTilt(12);
-    } // 12
-
-    private Command makeRemoveHighAlgae_Step2_PreRemove_EffectorAngle() {
-        return effectorSubsystem.makeLook(0.0);
-    }
-
-    private Command makeRemoveHighAlgae_Step3_PreRemove_ArmLength() {
-        return armReachSubsystem.makeReach(26.6);
-    }
-
-    private Command makeRemoveHighAlgae_Step4_ReadyRemove_ArmAngle() {
-        return armTiltSubsystem.makeTilt(25);
-    }
-
-    private Command makeRemoveHighAlgae_Step5_Remove_ArmAngle() {
-        return armTiltSubsystem.makeTilt(12);
-    }
-
     private final Command robotRemoveHighAlgaeAuto = 
         makeRobotSafe().andThen(
             say("init high algae"),
             effectorSubsystem.makeLook(0.0).alongWith(
             armTiltSubsystem.makeTilt(12),
+            armReachSubsystem.makeReach(26.6),
             effectorEatSubsystem.makeEatAt(-60, -60)),
         //Grab
-            armTiltSubsystem.makeTilt(25),
+            armTiltSubsystem.makeTilt(32), // was 27 barely touches at home
         Commands.waitSeconds(.8),
         //Remove
             armTiltSubsystem.makeTilt(12).alongWith(
-            armReachSubsystem.makeReach(0)),
+            armReachSubsystem.makeReach(28)),
         //Release
+        armReachSubsystem.makeReach(0),
         armTiltSubsystem.makeTilt(18),
         effectorEatSubsystem.makeZeroEncoder(),
         effectorEatSubsystem.makeEatTo(3.0),
@@ -174,19 +156,35 @@ public class RobotContainer {
     
     private final Command robotRemoveHighAlgae =
         makeRobotSafe().andThen(
-            effectorSubsystem.makeLook(0.0).alongWith(
+            effectorSubsystem.makeLook(40).alongWith(
             armTiltSubsystem.makeTilt(12),
-            effectorEatSubsystem.makeEatAt(-60, -60)),
-        //Grab
-        armTiltSubsystem.makeTilt(25),
-        Commands.waitSeconds(.8),
+            armReachSubsystem.makeReach(5)),
+        //GrabPr
+        armReachSubsystem.makeReach(8),
         //Remove
-            armTiltSubsystem.makeTilt(12).alongWith(
-            armReachSubsystem.makeReach(0)),
-        //Release
-        armTiltSubsystem.makeTilt(18),
-        effectorEatSubsystem.makeZeroEncoder(),
-        effectorEatSubsystem.makeEatTo(3.0));
+        effectorSubsystem.makeLook(-40),
+        armReachSubsystem.makeReach(0));
+;
+
+//    private final Command robotRemoveHighAlgae =
+//        makeRobotSafe().andThen(
+//            effectorSubsystem.makeLook(0).alongWith(
+//            armTiltSubsystem.makeTilt(12),
+//            armReachSubsystem.makeReach(26.6),
+//            effectorEatSubsystem.makeEatAt(-60, -60)),
+//        //Grab
+//        armTiltSubsystem.makeTilt(32),
+//        Commands.waitSeconds(.8),
+//        //Remove
+//            armTiltSubsystem.makeTilt(12).alongWith(
+//            armReachSubsystem.makeReach(28)),
+//        //Release
+//        armReachSubsystem.makeReach(0),
+//        armTiltSubsystem.makeTilt(18),
+//        effectorEatSubsystem.makeZeroEncoder(),
+//        effectorEatSubsystem.makeEatTo(3.0));
+
+
 
     private Command makeRemoveLowAlgae_Step1_BackUpFromL4_ArmAngle() {
         return armTiltSubsystem.makeTilt(12);
@@ -300,7 +298,7 @@ public class RobotContainer {
         say("ROBOT TO L3").andThen(
         makeRobotSafe(),
             effectorSubsystem.makeLook(+8.0).alongWith(
-            armTiltSubsystem.makeTilt(12),
+            armTiltSubsystem.makeTilt(5),
             armReachSubsystem.makeReach(23)
         ),
         armTiltSubsystem.makeTilt(23),
@@ -336,7 +334,7 @@ public class RobotContainer {
     private final Command robotToL1Second =
     say("ROBOT TO FIRST L1").andThen(
     makeRobotSafe(),
-        effectorSubsystem.makeLook(-59).alongWith(
+        effectorSubsystem.makeLook(-55).alongWith(
         armTiltSubsystem.makeTilt(12),
         armReachSubsystem.makeReach(1.8)
     ),
@@ -353,24 +351,11 @@ public class RobotContainer {
         return armReachSubsystem.makeReach(0);
     }
 
-    private final Command makeLiftPosition_Step1_EffectorAngle() {
-        return effectorSubsystem.makeLook(90);
-    }
-
-    private final Command makeLiftPosition_Step2_ArmLength() {
-        return armReachSubsystem.makeReach(0);
-    }
-
-    private final Command makeLiftPosition_Step3_ArmAngle() {
-        return armTiltSubsystem.makeTilt(70);
-    }
-
     private final Command robotToLift = makeRobotSafe().andThen(
-        makeLiftPosition_Step1_EffectorAngle(),
-        makeLiftPosition_Step2_ArmLength(),
-        makeLiftPosition_Step3_ArmAngle(),
+        effectorSubsystem.makeLook(120),
+        armReachSubsystem.makeReach(0),
+        armTiltSubsystem.makeTilt(68.5),
         makeSetNewPoseState(PoseState.LIFT),
-        say("Moving kicker"),
         kickerSubsystem.makeKickerPrepareLift()
         );               
     
@@ -518,13 +503,13 @@ public class RobotContainer {
                 // Drivetrain will execute this command periodically
                 drivetrain.applyRequest(() -> drive
                         .withVelocityX(-controllerDriver.getLeftY() * Math.abs(controllerDriver.getLeftY()) * MaxSpeed
-                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 0.4)) // Drive forward with
+                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 1.0)) // Drive forward with
                                                                                                // negative Y (forward)
                         .withVelocityY(-controllerDriver.getLeftX() * Math.abs(controllerDriver.getLeftX()) * MaxSpeed
-                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 0.4)) // Drive left with
+                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 1.0)) // Drive left with
                                                                                                // negative X (left)
                         .withRotationalRate(-controllerDriver.getRightX() * MaxAngularRate 
-                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 0.4)) // Drive counterclockwise
+                                * (controllerDriver.rightBumper().getAsBoolean() ? 0.2 : 1.0)) // Drive counterclockwise
                                                                                             // with negative X (left)
                 ));
 

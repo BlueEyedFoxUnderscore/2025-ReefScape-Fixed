@@ -54,8 +54,8 @@ public class ArmTiltSubsystem extends SubsystemBase{
         leaderTiltConfig.CurrentLimits.SupplyCurrentLimit = 15;
         leaderTiltConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         leaderTiltConfig.CurrentLimits.SupplyCurrentLowerTime = 0; // Disabled since zero
-        leaderTiltConfig.Voltage.PeakForwardVoltage=9.0; //9.0;
-        leaderTiltConfig.Voltage.PeakReverseVoltage=-9.0; // -9.0;
+        leaderTiltConfig.Voltage.PeakForwardVoltage=10.0; //9.0;
+        leaderTiltConfig.Voltage.PeakReverseVoltage=-10.0; // -9.0;
         leaderTiltConfig.Slot0.kP = 600.0; // An error of 1 results in 0.1 V output
         leaderTiltConfig.Slot0.kI = 0.0; // no output for integrated error
         leaderTiltConfig.Slot0.kD = 0.0; // no output for error derivative
@@ -73,8 +73,8 @@ public class ArmTiltSubsystem extends SubsystemBase{
         leaderTiltConfig.Slot1.kG = -.14; // -.10 is barely enough to stop it from going down when horizontal
         leaderTiltConfig.Slot1.GravityType=GravityTypeValue.Arm_Cosine;
         leaderTiltConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // No gravity compensation (yet)
-        leaderTiltConfig.MotionMagic.MotionMagicCruiseVelocity = .2; // Rot / sec
-        leaderTiltConfig.MotionMagic.MotionMagicAcceleration = 1; // Rot / sec^2
+        leaderTiltConfig.MotionMagic.MotionMagicCruiseVelocity = .3; // Rot / sec
+        leaderTiltConfig.MotionMagic.MotionMagicAcceleration = 1.5; // Rot / sec^2
         leaderTiltConfig.MotionMagic.MotionMagicJerk = 4; // Rot/sec^3
         leaderTiltConfig.Feedback.SensorToMechanismRatio = 4.*3.*3.*(80./12.); // Sets the gear ratio between rotations of the motor and rotations of the mechnism
         leaderTiltConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
@@ -86,10 +86,15 @@ public class ArmTiltSubsystem extends SubsystemBase{
         followerTilt.getConfigurator().apply(followerTiltConfig);
         leaderTilt.getConfigurator().apply(leaderTiltConfig);
         double rotorPosition = leaderTilt.getRotorPosition().getValueAsDouble();
-        rotorPosition = rotorPosition - Math.round(rotorPosition);;
-        System.out.println("\n\n****\nrotorRotations: "+rotorPosition);
-        System.out.println("calcedRotationsOffset: "+(rotorPosition/( 4.*3.*3.*(80./12.))));
-        leaderTilt.setPosition(-.25+(rotorPosition/( 4.*3.*3.*(80./12.))), 1); // When vertical, we are actually at -.25
+        double rotorOffset = rotorPosition -0.7;  // The correct rotor position for straight up is 0.7.
+        // So if the rotor positition mod 1 is exactly 0.7, we want to have no rotor offset so we
+        // set the mechanism position to zero. 
+        rotorOffset += 0.5;  // An error of 
+        rotorOffset = rotorOffset - Math.floor(rotorOffset); // How much do we have to ADD to get to the next integer?
+        rotorOffset -= 0.5; // Remove the offset
+        System.out.println("\n\n****\nrotorOffset: "+rotorOffset);
+        System.out.println("calcedRotationsOffset: "+(rotorOffset/( 4.*3.*3.*(80./12.))));
+        leaderTilt.setPosition(-.25+(rotorOffset/( 4.*3.*3.*(80./12.))), 1); // When vertical, we are actually at -.25
         followerTilt.setControl(followLeaderTiltRequest);
         leaderTilt.setControl(requestMotionMagicVoltage.withPosition(-0.25));
 
@@ -117,7 +122,7 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
     public boolean isStopped()
     {
-        boolean possiblySafe = (leaderTilt.getVelocity().getValueAsDouble()*360)<2.0;
+        boolean possiblySafe = (leaderTilt.getVelocity().getValueAsDouble()*360)<0.5;
         safeCountsRemaining = possiblySafe ? (safeCountsRemaining>0 ? safeCountsRemaining-1 : 0) : safeAfter;
         return safeCountsRemaining==0;
     }

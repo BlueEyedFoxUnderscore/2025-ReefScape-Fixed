@@ -21,40 +21,40 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class EffectorLookSubsystem extends SubsystemBase {
-    private SparkMax pivotSparkMax = new SparkMax(3, SparkLowLevel.MotorType.kBrushless);
-    private AbsoluteEncoder pivotAbsoluteEncoder = pivotSparkMax.getAbsoluteEncoder();
-    private SparkClosedLoopController pivotSparkMaxClosedLoopController = pivotSparkMax.getClosedLoopController();
+    private SparkMax lookSparkMax = new SparkMax(3, SparkLowLevel.MotorType.kBrushless);
+    private AbsoluteEncoder lookAbsoluteEncoder = lookSparkMax.getAbsoluteEncoder();
+    private SparkClosedLoopController lookSparkMaxClosedLoopController = lookSparkMax.getClosedLoopController();
 
-    private SparkMaxConfig sparkMaxPivotConfig = new SparkMaxConfig();
+    private SparkMaxConfig sparkMaxLookConfig = new SparkMaxConfig();
 
     private static final double positionWhenZeroed = .5;
 
     public void init() {
 
-        sparkMaxPivotConfig
+        sparkMaxLookConfig
             .idleMode(IdleMode.kBrake)
             .smartCurrentLimit(20)
             .inverted(false)
             .voltageCompensation(10.0);
-        sparkMaxPivotConfig.absoluteEncoder
+        sparkMaxLookConfig.absoluteEncoder
             // 
             .zeroOffset(0.331)
             // positionConversionFactor sets the position that encoder reports when making one full revolution.
             //x In this case, we will use degrees           
             .positionConversionFactor(360);
-        sparkMaxPivotConfig.closedLoop
+        sparkMaxLookConfig.closedLoop
             .pidf(.007, 0, 0, 0, ClosedLoopSlot.kSlot0)
             .outputRange(-.2, .2, ClosedLoopSlot.kSlot0)
             .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder);
         
-        pivotSparkMax.configure(sparkMaxPivotConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+        lookSparkMax.configure(sparkMaxLookConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
-        pivotSparkMaxClosedLoopController.setReference(180, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+        lookSparkMaxClosedLoopController.setReference(180, ControlType.kPosition, ClosedLoopSlot.kSlot0);
 
         SmartDashboard.putData("Effector", new Sendable() {
             @Override
             public void initSendable(SendableBuilder builder) {
-                builder.addDoubleProperty("Effector look", ()-> pivotAbsoluteEncoder.getPosition()-180, null);
+                builder.addDoubleProperty("Effector look", ()-> {return lookAbsoluteEncoder.getPosition()-180;}, null);
             }
         });
     }
@@ -71,7 +71,7 @@ public class EffectorLookSubsystem extends SubsystemBase {
         }
         else return this.runOnce(() -> 
             {
-                pivotSparkMaxClosedLoopController.setReference(180+look, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+                lookSparkMaxClosedLoopController.setReference(180+look, ControlType.kPosition, ClosedLoopSlot.kSlot0);
                 System.out.println("Effector angle set to " + look);
             }
         );

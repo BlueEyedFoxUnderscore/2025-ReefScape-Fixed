@@ -107,10 +107,10 @@ public class KickerSubsystem extends SubsystemBase {
             () -> {},
             () -> {
                 kickerController.setReference(kickerPosRetracted, ControlType.kPosition, ClosedLoopSlot.kSlot0);
-                liftSparkMax.setVoltage(12*speed.getAsDouble());
+                liftSparkMax.setVoltage(10*speed.getAsDouble());
             },
             (Boolean canceled) -> {liftSparkMax.setVoltage(0);},
-            () -> {return kickerAbsoluteEncoder.getPosition()<95.0;},
+            () -> {return kickerAbsoluteEncoder.getPosition()<92.0;},
             this
         );
     }

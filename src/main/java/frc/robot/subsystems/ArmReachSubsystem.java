@@ -43,7 +43,7 @@ public class ArmReachSubsystem extends SubsystemBase{
         leftReachSparkMaxConfig.closedLoop
         .pidf(.9, 0, 0, .00001, ClosedLoopSlot.kSlot0)
         .pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot1)
-        .outputRange(-.4, .5, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
+        .outputRange(-.35, .45, ClosedLoopSlot.kSlot0);  // -0.3 and 0.4 are really fast
 
         leftReachSparkMax.configure(leftReachSparkMaxConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
