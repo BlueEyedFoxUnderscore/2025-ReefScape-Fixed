@@ -119,10 +119,13 @@ public class RobotContainer {
             .finallyDo((interrupted) -> {if (interrupted) stopIntake.schedule();});
 
     private final Command robotReIntake =
+            effectorEatSubsystem.makeEatAt(-5, -5).andThen(
+            Commands.waitUntil(() -> {return !controllerOperator.leftTrigger().getAsBoolean();}),
             effectorEatSubsystem.makeEatAt(-10.0, -10.0).andThen(
             effectorEatSubsystem.makeWaitUntilCoralMissing(),
             effectorEatSubsystem.makeZeroEncoder(),
-            effectorEatSubsystem.makeEatTo(6.0));
+            effectorEatSubsystem.makeEatTo(6.0))
+            );
 
     private Command makeRemoveEitherAlgae_Deposit_ArmLength() {
         return armReachSubsystem.makeReach(0);
