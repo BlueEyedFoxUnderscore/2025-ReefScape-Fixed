@@ -122,7 +122,7 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
     public boolean isStopped()
     {
-        boolean possiblySafe = (leaderTilt.getVelocity().getValueAsDouble()*360)<0.5;
+        boolean possiblySafe = (leaderTilt.getVelocity().getValueAsDouble()*360)<0.25;
         safeCountsRemaining = possiblySafe ? (safeCountsRemaining>0 ? safeCountsRemaining-1 : 0) : safeAfter;
         return safeCountsRemaining==0;
     }
@@ -134,7 +134,7 @@ public class ArmTiltSubsystem extends SubsystemBase{
 
 
 
-    double currentArmRotations = 0;
+    double currentArmRotations = -.25;
 
     public Command makeTilt(double angle){
         if (angle<minAllowedAngle || angle > maxAllowedAngle) {

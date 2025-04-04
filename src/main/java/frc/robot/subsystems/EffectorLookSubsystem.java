@@ -61,7 +61,7 @@ public class EffectorLookSubsystem extends SubsystemBase {
 
     public Command makeLook(double look)
     {  
-        if (look > (130) || look < (-130)) {
+        if (look > (130) || look < (-55)) {
             System.out.println("EFFECTOR LOOK REQUEST OF " + look + " IS OUT OF BOUNDS");
             return this.runOnce(
                 () -> {
