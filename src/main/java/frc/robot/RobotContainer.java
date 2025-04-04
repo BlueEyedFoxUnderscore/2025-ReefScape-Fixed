@@ -148,10 +148,10 @@ public class RobotContainer {
             armTiltSubsystem.makeTilt(18),
             effectorEatSubsystem.makeZeroEncoder(),
             effectorEatSubsystem.makeEatTo(3.0),
-            Commands.waitSeconds(.5),
-            armReachSubsystem.makeReach(0),
-            effectorSubsystem.makeLook(-55),
-            armTiltSubsystem.makeTilt(50))
+            Commands.waitSeconds(.8),
+                effectorSubsystem.makeLook(-55).alongWith(
+                armTiltSubsystem.makeTilt(50))        
+            )
         );
 
 
@@ -172,11 +172,7 @@ public class RobotContainer {
             armReachSubsystem.makeReach(0),
             armTiltSubsystem.makeTilt(18),
             effectorEatSubsystem.makeZeroEncoder(),
-            effectorEatSubsystem.makeEatTo(3.0),
-            Commands.waitSeconds(.8),
-                effectorSubsystem.makeLook(-55).alongWith(
-                armTiltSubsystem.makeTilt(50))        
-            )
+            effectorEatSubsystem.makeEatTo(3.0))
         );
 
     private final Command robotRemoveLowAlgaeAuto = 
@@ -193,7 +189,7 @@ public class RobotContainer {
             armReachSubsystem.makeReach(0),
             armTiltSubsystem.makeTilt(18),
             effectorEatSubsystem.makeZeroEncoder(),
-            effectorEatSubsystem.makeEatTo(3.0),
+            effectorEatSubsystem.makeEatTo(5.0),
             Commands.waitSeconds(.8),
                 effectorSubsystem.makeLook(-55).alongWith(
                 armTiltSubsystem.makeTilt(50))        
@@ -317,7 +313,7 @@ public class RobotContainer {
 
     private final Command robotAutoKick = Commands.race(
         kickerSubsystem.makeKickerAutoKick(),
-        Commands.waitSeconds(3)
+        Commands.waitSeconds(1) // WAS 3
     );
 
 
@@ -379,6 +375,7 @@ public class RobotContainer {
             robotReleaseBrake.          setName("releaseBrake");
             robotRemoveHighAlgaeAuto.   setName("removeHighAlgae");
             robotRemoveLowAlgaeAuto.    setName("removeLowAlgae");
+            robotToCaptureAlgae.        setName("toCaptureAlgae");
             robotToL1First.             setName("toL1");
             robotToL2.                  setName("toL2");
             robotToL3.                  setName("toL3");

@@ -15,7 +15,7 @@ public class Robot extends TimedRobot {
   private final RobotContainer m_robotContainer;
 
   public Robot() {
-    CameraServer.startAutomaticCapture();
+    //CameraServer.startAutomaticCapture();
     m_robotContainer = new RobotContainer();
   }
   
